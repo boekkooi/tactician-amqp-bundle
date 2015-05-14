@@ -1,5 +1,10 @@
 # TacticianAMQPBundle
-[![Build Status](https://travis-ci.org/boekkooi/tactician-amqp-bundle.svg?branch=master)](https://travis-ci.org/boekkooi/tactician-amqp-bundle)
+[![Latest Version](https://img.shields.io/github/release/boekkooi/tactician-amqp-bundle.svg?style=flat-square)](https://github.com/boekkooi/tactician-amqp-bundle/releases)
+[![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
+[![Build Status](https://img.shields.io/travis/boekkooi/tactician-amqp-bundle/master.svg?style=flat-square)](https://travis-ci.org/boekkooi/tactician-amqp-bundle)
+[![Coverage Status](https://img.shields.io/scrutinizer/coverage/g/boekkooi/tactician-amqp-bundle.svg?style=flat-square)](https://scrutinizer-ci.com/g/boekkooi/tactician-amqp-bundle/code-structure)
+[![Quality Score](https://img.shields.io/scrutinizer/g/boekkooi/tactician-amqp-bundle.svg?style=flat-square)](https://scrutinizer-ci.com/g/boekkooi/tactician-amqp-bundle)
+[![Total Downloads](https://img.shields.io/packagist/dt/boekkooi/tactician-amqp-bundle.svg?style=flat-square)](https://packagist.org/packages/boekkooi/tactician-amqp-bundle)
 
 Symfony2 Bundle extending for the [Tactician bundle](https://github.com/thephpleague/tactician-bundle) with AMQP powers.
 
