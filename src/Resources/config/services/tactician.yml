@@ -1,0 +1,55 @@
+parameters:
+  boekkooi.amqp.tactician.publisher.class: Boekkooi\Tactician\AMQP\Publisher\MessagePublisher
+  boekkooi.amqp.tactician.exchange_locator.class: Boekkooi\Bundle\AMQP\Publisher\Locator\ContainerLocator
+
+  boekkooi.amqp.tactician.serializer.class: Boekkooi\Bundle\AMQP\Transformer\Serializer\SimpleSerializer
+  boekkooi.amqp.tactician.serializer.format: 'json'
+
+  boekkooi.amqp.tactician.transformer.class: Boekkooi\Bundle\AMQP\Transformer\SerializerTransformer
+
+  boekkooi.amqp.middleware.publish.class: Boekkooi\Tactician\AMQP\Middleware\PublishMiddleware
+  boekkooi.amqp.middleware.consume.class: Boekkooi\Tactician\AMQP\Middleware\ConsumeMiddleware
+  boekkooi.amqp.middleware.command_transformer.class: Boekkooi\Bundle\AMQP\Middleware\CommandTransformerMiddleware
+  boekkooi.amqp.middleware.envelope_transformer.class: Boekkooi\Tactician\AMQP\Middleware\EnvelopeTransformerMiddleware
+
+services:
+  ## Publishing related ##
+  boekkooi.amqp.tactician.publisher:
+    class: %boekkooi.amqp.tactician.publisher.class%
+    arguments:
+      - @boekkooi.amqp.tactician.exchange_locator
+
+  boekkooi.amqp.tactician.exchange_locator:
+    class: %boekkooi.amqp.tactician.exchange_locator.class%
+    arguments:
+      - @service_container
+
+  ## Transformer related ##
+  boekkooi.amqp.tactician.serializer:
+    class: %boekkooi.amqp.tactician.serializer.class%
+
+  boekkooi.amqp.tactician.transformer:
+    class: %boekkooi.amqp.tactician.transformer.class%
+    arguments:
+      - @boekkooi.amqp.tactician.serializer
+      - %boekkooi.amqp.tactician.serializer.format%
+
+  ## Tactician middleware ##
+  boekkooi.amqp.middleware.publish:
+    class: %boekkooi.amqp.middleware.publish.class%
+    arguments:
+      - @boekkooi.amqp.tactician.publisher
+
+  boekkooi.amqp.middleware.consume:
+    class: %boekkooi.amqp.middleware.consume.class%
+
+  boekkooi.amqp.middleware.command_transformer:
+    class: %boekkooi.amqp.middleware.command_transformer.class%
+    arguments:
+      - @boekkooi.amqp.tactician.transformer
+      - []
+
+  boekkooi.amqp.middleware.envelope_transformer:
+    class: %boekkooi.amqp.middleware.envelope_transformer.class%
+    arguments:
+      - @boekkooi.amqp.tactician.transformer

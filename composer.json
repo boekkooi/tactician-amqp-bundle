@@ -1,0 +1,44 @@
+{
+  "name": "boekkooi/amqp-bundle",
+  "description": "A AMQP bundle using tactician and php-amqp",
+  "license": "MIT",
+  "keywords": ["amqp", "tactician", "rabbitmq", "symfony"],
+  "homepage": "http://tactician.thephpleague.com",
+  "authors": [
+    {
+      "name": "Warnar Boekkooi",
+      "email": "warnar@boekkooi.net"
+    }
+  ],
+  "require": {
+    "symfony/framework-bundle": "~2.7",
+    "symfony/yaml": "~2.7",
+    "symfony/serializer": "~2.7",
+
+    "league/tactician-bundle": "^0.2",
+    "boekkooi/tactician-amqp": "^0.1"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "~4.3",
+    "mockery/mockery": "~0.9, >= 0.9.4",
+    "matthiasnoback/symfony-config-test": "~1.0",
+    "matthiasnoback/symfony-dependency-injection-test": "^0.7"
+  },
+  "autoload": {
+    "psr-4": {
+      "Boekkooi\\Bundle\\AMQP\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\Boekkooi\\Bundle\\AMQP\\": "tests/"
+    }
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-master": "0.1-dev"
+    }
+  },
+  "prefer-stable": true,
+  "minimum-stability": "dev"
+}

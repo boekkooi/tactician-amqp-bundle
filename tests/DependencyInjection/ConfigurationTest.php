@@ -1,0 +1,454 @@
+<?php
+namespace Tests\Boekkooi\Bundle\AMQP\DependencyInjection;
+
+use Boekkooi\Bundle\AMQP\DependencyInjection\Configuration;
+use Matthias\SymfonyConfigTest\PhpUnit\ConfigurationTestCaseTrait;
+
+class ConfigurationTest extends \PHPUnit_Framework_TestCase
+{
+    use ConfigurationTestCaseTrait;
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getConfiguration()
+    {
+        return new Configuration();
+    }
+
+    public function testBlankConfiguration()
+    {
+        $this->assertProcessedConfigurationEquals(
+            [],
+            $this->defaultConfig()
+        );
+    }
+
+    public function testConnectionDefaults()
+    {
+        $this->assertProcessedConfigurationEquals(
+            [
+                'boekkooi_amqp' => [
+                    'connections' => [
+                        'default' => []
+                    ]
+                ]
+            ],
+            array_merge($this->defaultConfig(), [
+                'connections' => [
+                    'default' => $this->defaultConnectionConfig()
+                ]
+            ])
+        );
+    }
+
+    public function testConnectionTimeoutArray()
+    {
+        $this->assertProcessedConfigurationEquals(
+            [
+                'boekkooi_amqp' => [
+                    'connections' => [
+                        'custom' => [
+                            'timeout' => [
+                                'read' => 20,
+                                'write' => 25,
+                                'connect' => 30
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            array_merge($this->defaultConfig(), [
+                'connections' => [
+                    'custom' => array_merge($this->defaultConnectionConfig(), [
+                        'timeout' => [
+                            'read' => 20,
+                            'write' => 25,
+                            'connect' => 30
+                        ]
+                    ])
+                ]
+            ])
+        );
+    }
+
+    public function testConnectionTimeoutInt()
+    {
+        $this->assertProcessedConfigurationEquals(
+            [
+                'boekkooi_amqp' => [
+                    'connections' => [
+                        'custom' => [
+                            'timeout' => 40
+                        ]
+                    ]
+                ]
+            ],
+            array_merge($this->defaultConfig(), [
+                'connections' => [
+                    'custom' => array_merge($this->defaultConnectionConfig(), [
+                        'timeout' => [
+                            'read' => 40,
+                            'write' => 40,
+                            'connect' => 40
+                        ]
+                    ])
+                ]
+            ])
+        );
+    }
+
+    public function testVHostsDefaults()
+    {
+        $this->assertProcessedConfigurationEquals(
+            [
+                'boekkooi_amqp' => [
+                    'vhosts' => [
+                        '/' => []
+                    ]
+                ]
+            ],
+            array_merge($this->defaultConfig(), [
+                'vhosts' => [
+                    '/' => $this->defaultVHostConfig()
+                ]
+            ])
+        );
+    }
+
+    public function testVHostsExchanges()
+    {
+        $this->assertProcessedConfigurationEquals(
+            [
+                'boekkooi_amqp' => [
+                    'vhosts' => [
+                        '/' => [
+                            'exchanges' => [
+                                'dealer' => [
+                                    'type' => 'direct'
+                                ]
+                            ]
+                        ],
+                        '/extra' => [
+                            'exchanges' => [
+                                'dealer' => [
+                                    'type' => 'fanout',
+                                    'passive' => true,
+                                    'durable' => false,
+                                    'arguments' => [
+                                        'headers' => [
+                                            'test' => 123
+                                        ],
+                                        'content_type' => 'application/json'
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            array_merge($this->defaultConfig(), [
+                'vhosts' => [
+                    '/' => array_merge($this->defaultVHostConfig(), [
+                        'exchanges' => [
+                            'dealer' => [
+                                'type' => 'direct',
+                                'passive' => false,
+                                'durable' => true,
+                                'arguments' => []
+                            ]
+                        ]
+                    ]),
+                    '/extra' => array_merge($this->defaultVHostConfig(), [
+                        'exchanges' => [
+                            'dealer' => [
+                                'type' => 'fanout',
+                                'passive' => true,
+                                'durable' => false,
+                                'arguments' => [
+                                    'headers' => [
+                                        'test' => 123
+                                    ],
+                                    'content_type' => 'application/json'
+                                ]
+                            ]
+                        ]
+                    ])
+                ]
+            ])
+        );
+    }
+
+    public function testVHostsExchangeRequireType()
+    {
+        $this->assertConfigurationIsInvalid(
+            [
+                'boekkooi_amqp' => [
+                    'vhosts' => [
+                        '/' => [
+                            'exchanges' => [
+                                'dealer' => []
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            'The child node "type" at path "boekkooi_amqp.vhosts./.exchanges.dealer" must be configured.'
+        );
+    }
+
+    public function testVHostsExchangeTypeEnum()
+    {
+        $this->assertConfigurationIsInvalid(
+            [
+                'boekkooi_amqp' => [
+                    'vhosts' => [
+                        '/' => [
+                            'exchanges' => [
+                                'dealer' => [
+                                    'type' => 'evil'
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            'The value "evil" is not allowed for path "boekkooi_amqp.vhosts./.exchanges.dealer.type". Permissible values:'
+        );
+    }
+
+    public function testVHostQueue()
+    {
+        $this->assertProcessedConfigurationEquals(
+            [
+                'boekkooi_amqp' => [
+                    'vhosts' => [
+                        '/' => [
+                            'queues' => [
+                                'car' => [
+                                    'binds' => [
+                                        'my_exchange' => []
+                                    ]
+                                ],
+                                'all' => [
+                                    'passive' => true,
+                                    'durable' => false,
+                                    'exclusive' => true,
+                                    'auto_delete' => true,
+                                    'arguments' => [
+                                        'some' => 'arg'
+                                    ],
+                                    'binds' => [
+                                        'my_exchange' => [],
+                                        'dope_exchange' => [
+                                            'routing_key' => 'd',
+                                            'arguments' => [
+                                                'c' => 'arg'
+                                            ]
+                                        ]
+                                    ]
+                                ],
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            array_merge($this->defaultConfig(), [
+                'vhosts' => [
+                    '/' => array_merge($this->defaultVHostConfig(), [
+                        'queues' => [
+                            'car' => [
+                                'passive' => false,
+                                'durable' => true,
+                                'exclusive' => false,
+                                'auto_delete' => false,
+                                'arguments' => [],
+                                'binds' => [
+                                    'my_exchange' => [
+                                        'routing_key' => null,
+                                        'arguments' => []
+                                    ]
+                                ]
+                            ],
+                            'all' => [
+                                'passive' => true,
+                                'durable' => false,
+                                'exclusive' => true,
+                                'auto_delete' => true,
+                                'arguments' => [
+                                    'some' => 'arg'
+                                ],
+                                'binds' => [
+                                    'my_exchange' => [
+                                        'routing_key' => null,
+                                        'arguments' => []
+                                    ],
+                                    'dope_exchange' => [
+                                        'routing_key' => 'd',
+                                        'arguments' => [
+                                            'c' => 'arg'
+                                        ]
+                                    ]
+                                ]
+                            ],
+                        ]
+                    ])
+                ]
+            ])
+        );
+    }
+
+    public function testVHostQueueRequireBinds()
+    {
+        $this->assertConfigurationIsInvalid(
+            [
+                'boekkooi_amqp' => [
+                    'vhosts' => [
+                        '/' => [
+                            'queues' => [
+                                'car' => [],
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            'The child node "binds" at path "boekkooi_amqp.vhosts./.queues.car" must be configured.'
+        );
+    }
+
+    public function testVHostQueueRequireAtLeastOneBind()
+    {
+        $this->assertConfigurationIsInvalid(
+            [
+                'boekkooi_amqp' => [
+                    'vhosts' => [
+                        '/' => [
+                            'queues' => [
+                                'car' => [
+                                    'binds' => []
+                                ],
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            'The path "boekkooi_amqp.vhosts./.queues.car.binds" should have at least 1 element(s) defined.'
+        );
+    }
+
+    public function testCommands()
+    {
+        $this->assertProcessedConfigurationEquals(
+            [
+                'boekkooi_amqp' => [
+                    'commands' => [
+                        'my\\Command' => [
+                            'vhost' => '/',
+                            'exchange' => 'e'
+                        ],
+                        'my\\SecondCommand' => [
+                            'vhost' => '/test',
+                            'exchange' => 'a',
+                            'routing_key' => 'key',
+                            'mandatory' => false,
+                            'immediate' => true,
+                            'attributes' => [
+                                'some' => 'attr'
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            array_merge($this->defaultConfig(), [
+                'commands' => [
+                    'my\\Command' => [
+                        'vhost' => '/',
+                        'exchange' => 'e',
+                        'routing_key' => null,
+                        'mandatory' => true,
+                        'immediate' => false,
+                        'attributes' => []
+                    ],
+                    'my\\SecondCommand' => [
+                        'vhost' => '/test',
+                        'exchange' => 'a',
+                        'routing_key' => 'key',
+                        'mandatory' => false,
+                        'immediate' => true,
+                        'attributes' => [
+                            'some' => 'attr'
+                        ]
+                    ]
+                ]
+            ])
+        );
+    }
+
+    public function testCommandsRequireVhost()
+    {
+        $this->assertConfigurationIsInvalid(
+            [
+                'boekkooi_amqp' => [
+                    'commands' => [
+                        'my\\Class' => []
+                    ]
+                ]
+            ],
+            'The child node "vhost" at path "boekkooi_amqp.commands.my\\Class" must be configured.'
+        );
+    }
+
+    public function testCommandsRequireExchange()
+    {
+        $this->assertConfigurationIsInvalid(
+            [
+                'boekkooi_amqp' => [
+                    'commands' => [
+                        'my\\Class' => [
+                            'vhost' => '/'
+                        ]
+                    ]
+                ]
+            ],
+            'The child node "exchange" at path "boekkooi_amqp.commands.my\\Class" must be configured.'
+        );
+    }
+
+    protected function defaultConfig()
+    {
+        return [
+            'connections' => [],
+            'vhosts' => [],
+            'commands' => [],
+            'command_bus' => 'tactician.commandbus',
+            'envelope_transformer' => 'boekkooi.amqp.tactician.transformer',
+            'command_transformer' => 'boekkooi.amqp.tactician.transformer',
+            'serializer' => 'boekkooi.amqp.tactician.serializer',
+            'serializer_format' => 'json'
+        ];
+    }
+
+    protected function defaultConnectionConfig()
+    {
+        return [
+            'host' => 'localhost',
+            'port' => 5672,
+            'timeout' => [
+                'read' => 10,
+                'write' => 10,
+                'connect' => 10
+            ],
+            'login' => 'guest',
+            'password' => 'guest'
+        ];
+    }
+
+    protected function defaultVHostConfig()
+    {
+        return [
+            'connection' => 'default',
+            'exchanges' => [],
+            'queues' => []
+        ];
+    }
+}
