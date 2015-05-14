@@ -14,7 +14,7 @@ class SimpleSerializer extends Serializer
     {
         parent::__construct(
             [
-                new Normalizer\ObjectNormalizer()
+                new Normalizer\GetSetMethodNormalizer()
             ],
             [
                 new Encoder\JsonEncoder(),
