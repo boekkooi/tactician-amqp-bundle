@@ -58,7 +58,7 @@ class HandleCommandTest extends \PHPUnit_Framework_TestCase
             ->with(sprintf(BoekkooiAMQPExtension::SERVICE_VHOST_QUEUE_ID, '/', 'my_queue'))
             ->andReturn($queue);
 
-        $this->commandTester->execute(
+        $statusCode = $this->commandTester->execute(
             array(
                 '--amount' => 5,
                 'vhost'    => '/',
@@ -66,7 +66,7 @@ class HandleCommandTest extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $this->assertSame(0, $this->commandTester->getStatusCode());
+        $this->assertSame(0, $statusCode);
     }
 
     /**
