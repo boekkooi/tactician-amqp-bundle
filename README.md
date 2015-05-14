@@ -107,3 +107,16 @@ tactician:
 ```
 
 To configure a command bus to handle messages from a AMQP server when using `app/console amqp:handle` you can configure the middleware in your `app/config.yml` as followed.
+
+```yaml
+tactician:
+    commandbus:
+        amqp_consume:
+            middleware:
+                - boekkooi.amqp.middleware.consume
+                - boekkooi.amqp.middleware.envelope_transformer
+                - tactician.middleware.command_handler
+
+boekkooi_amqp:
+  command_bus: tactician.commandbus.amqp_consume
+```
