@@ -68,6 +68,7 @@ class Configuration implements ConfigurationInterface
                     ->canBeUnset()
                     ->prototype('array')
                         ->children()
+                            ->scalarNode('path')->info('The actual vhost')->isRequired()->end()
                             ->scalarNode('connection')->defaultValue('default')->end()
 
                             ->arrayNode('exchanges')

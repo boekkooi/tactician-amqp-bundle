@@ -19,6 +19,7 @@ class BoekkooiAMQPExtension extends Extension
     const SERVICE_VHOST_CHANNEL_ID = 'boekkooi.amqp.vhost.%s.channel';
     const SERVICE_VHOST_EXCHANGE_ID = 'boekkooi.amqp.vhost.%s.exchange.%s';
     const SERVICE_VHOST_QUEUE_ID = 'boekkooi.amqp.vhost.%s.queue.%s';
+    const PARAMETER_VHOST_MAP = 'boekkooi.amqp.vhost.map';
     const PARAMETER_VHOST_QUEUE_BINDS = 'boekkooi.amqp.vhost.%s.queue.%s.binds';
 
     /**
@@ -76,7 +77,7 @@ class BoekkooiAMQPExtension extends Extension
 
             // Create connection service
             $def = new DefinitionDecorator($connectionServiceId);
-            $def->addMethodCall('setVhost', [ $name ]);
+            $def->addMethodCall('setVhost', [ $info['path'] ]);
             $container->setDefinition($vhostConnectionServiceId, $def);
 
             // Create channel service
@@ -180,7 +181,7 @@ class BoekkooiAMQPExtension extends Extension
         $def->addMethodCall('addCommands', [$commands]);
 
         $def = $container->getDefinition('boekkooi.amqp.middleware.command_transformer');
-        $def->addMethodCall('addSupportedCommand', [array_keys($commands)]);
+        $def->addMethodCall('addSupportedCommands', [array_keys($commands)]);
     }
 
     private function configureMiddleware(ContainerBuilder $container, array $config)

@@ -104,13 +104,15 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
             [
                 'boekkooi_amqp' => [
                     'vhosts' => [
-                        '/' => []
+                        'root' => [
+                            'path' => '/'
+                        ]
                     ]
                 ]
             ],
             array_merge($this->defaultConfig(), [
                 'vhosts' => [
-                    '/' => $this->defaultVHostConfig()
+                    'root' => $this->defaultVHostConfig()
                 ]
             ])
         );
@@ -122,14 +124,16 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
             [
                 'boekkooi_amqp' => [
                     'vhosts' => [
-                        '/' => [
+                        'root' => [
+                            'path' => '/',
                             'exchanges' => [
                                 'dealer' => [
                                     'type' => 'direct'
                                 ]
                             ]
                         ],
-                        '/extra' => [
+                        'extra' => [
+                            'path' => '/extra',
                             'exchanges' => [
                                 'dealer' => [
                                     'type' => 'fanout',
@@ -149,7 +153,7 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
             ],
             array_merge($this->defaultConfig(), [
                 'vhosts' => [
-                    '/' => array_merge($this->defaultVHostConfig(), [
+                    'root' => array_merge($this->defaultVHostConfig(), [
                         'exchanges' => [
                             'dealer' => [
                                 'type' => 'direct',
@@ -159,7 +163,7 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
                             ]
                         ]
                     ]),
-                    '/extra' => array_merge($this->defaultVHostConfig(), [
+                    'extra' => array_merge($this->defaultVHostConfig('/extra'), [
                         'exchanges' => [
                             'dealer' => [
                                 'type' => 'fanout',
@@ -185,7 +189,8 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
             [
                 'boekkooi_amqp' => [
                     'vhosts' => [
-                        '/' => [
+                        'root' => [
+                            'path' => '/',
                             'exchanges' => [
                                 'dealer' => []
                             ]
@@ -193,7 +198,7 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
                     ]
                 ]
             ],
-            'The child node "type" at path "boekkooi_amqp.vhosts./.exchanges.dealer" must be configured.'
+            'The child node "type" at path "boekkooi_amqp.vhosts.root.exchanges.dealer" must be configured.'
         );
     }
 
@@ -203,7 +208,8 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
             [
                 'boekkooi_amqp' => [
                     'vhosts' => [
-                        '/' => [
+                        'root' => [
+                            'path' => '/',
                             'exchanges' => [
                                 'dealer' => [
                                     'type' => 'evil'
@@ -213,7 +219,7 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
                     ]
                 ]
             ],
-            'The value "evil" is not allowed for path "boekkooi_amqp.vhosts./.exchanges.dealer.type". Permissible values:'
+            'The value "evil" is not allowed for path "boekkooi_amqp.vhosts.root.exchanges.dealer.type". Permissible values:'
         );
     }
 
@@ -223,7 +229,8 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
             [
                 'boekkooi_amqp' => [
                     'vhosts' => [
-                        '/' => [
+                        'root' => [
+                            'path' => '/',
                             'queues' => [
                                 'car' => [
                                     'binds' => [
@@ -255,7 +262,7 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
             ],
             array_merge($this->defaultConfig(), [
                 'vhosts' => [
-                    '/' => array_merge($this->defaultVHostConfig(), [
+                    'root' => array_merge($this->defaultVHostConfig(), [
                         'queues' => [
                             'car' => [
                                 'passive' => false,
@@ -304,7 +311,8 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
             [
                 'boekkooi_amqp' => [
                     'vhosts' => [
-                        '/' => [
+                        'root' => [
+                            'path' => '/',
                             'queues' => [
                                 'car' => [],
                             ]
@@ -312,7 +320,7 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
                     ]
                 ]
             ],
-            'The child node "binds" at path "boekkooi_amqp.vhosts./.queues.car" must be configured.'
+            'The child node "binds" at path "boekkooi_amqp.vhosts.root.queues.car" must be configured.'
         );
     }
 
@@ -322,7 +330,8 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
             [
                 'boekkooi_amqp' => [
                     'vhosts' => [
-                        '/' => [
+                        'root' => [
+                            'path' => '/',
                             'queues' => [
                                 'car' => [
                                     'binds' => []
@@ -332,7 +341,7 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
                     ]
                 ]
             ],
-            'The path "boekkooi_amqp.vhosts./.queues.car.binds" should have at least 1 element(s) defined.'
+            'The path "boekkooi_amqp.vhosts.root.queues.car.binds" should have at least 1 element(s) defined.'
         );
     }
 
@@ -443,9 +452,10 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
-    protected function defaultVHostConfig()
+    protected function defaultVHostConfig($path = '/')
     {
         return [
+            'path' => $path,
             'connection' => 'default',
             'exchanges' => [],
             'queues' => []

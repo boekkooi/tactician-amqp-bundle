@@ -51,7 +51,8 @@ class BoekkooiAMQPExtensionTest extends AbstractExtensionTestCase
                 'default' => [],
             ],
             'vhosts' => [
-                '/' => [
+                'root' => [
+                    'path' => '/',
                     'exchanges' => [
                         'my_exchange' => [
                             'type' => 'direct'
@@ -68,7 +69,7 @@ class BoekkooiAMQPExtensionTest extends AbstractExtensionTestCase
             ],
             'commands' => [
                 'my\\Command' => [
-                    'vhost' => '/',
+                    'vhost' => 'root',
                     'exchange' => 'my_exchange'
                 ],
             ]
@@ -86,26 +87,26 @@ class BoekkooiAMQPExtensionTest extends AbstractExtensionTestCase
             'password' => 'guest'
         ]);
 
-        $exchangeId = sprintf(BoekkooiAMQPExtension::SERVICE_VHOST_EXCHANGE_ID, '/', 'my_exchange');
+        $exchangeId = sprintf(BoekkooiAMQPExtension::SERVICE_VHOST_EXCHANGE_ID, 'root', 'my_exchange');
         $this->assertContainerBuilderHasService($exchangeId);
         $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($exchangeId, 'setName', [ 'my_exchange' ]);
         $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($exchangeId, 'setArguments', [ [] ]);
         $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($exchangeId, 'setType', [ AMQP_EX_TYPE_DIRECT ]);
         $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($exchangeId, 'setFlags', [ AMQP_DURABLE ]);
 
-        $queueId = sprintf(BoekkooiAMQPExtension::SERVICE_VHOST_QUEUE_ID, '/', 'test');
+        $queueId = sprintf(BoekkooiAMQPExtension::SERVICE_VHOST_QUEUE_ID, 'root', 'test');
         $this->assertContainerBuilderHasService($queueId);
         $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($queueId, 'setName', [ 'test' ]);
         $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($queueId, 'setArguments', [ [] ]);
         $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($queueId, 'setFlags', [ AMQP_DURABLE ]);
 
-        $queueBindsId = sprintf(BoekkooiAMQPExtension::PARAMETER_VHOST_QUEUE_BINDS, '/', 'test');
+        $queueBindsId = sprintf(BoekkooiAMQPExtension::PARAMETER_VHOST_QUEUE_BINDS, 'root', 'test');
         $this->assertContainerBuilderHasParameter($queueBindsId, ['my_exchange' => [ 'routing_key' => null, 'arguments' => [] ]]);
 
         $transformerId = 'boekkooi.amqp.tactician.transformer';
         $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($transformerId, 'addCommands', [[
             'my\\Command' => [
-                'vhost' => '/',
+                'vhost' => 'root',
                 'exchange' => 'my_exchange',
                 'routing_key' => null,
                 'flags' => AMQP_MANDATORY,
@@ -114,7 +115,7 @@ class BoekkooiAMQPExtensionTest extends AbstractExtensionTestCase
         ]]);
 
         $transformerMiddlewareId = 'boekkooi.amqp.middleware.command_transformer';
-        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($transformerMiddlewareId, 'addSupportedCommand', [
+        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($transformerMiddlewareId, 'addSupportedCommands', [
             [ 'my\\Command' ]
         ]);
     }
@@ -125,7 +126,8 @@ class BoekkooiAMQPExtensionTest extends AbstractExtensionTestCase
 
         $this->load([
             'vhosts' => [
-                '/' => [
+                'root' => [
+                    'path' => '/',
                     'connection' => 'none',
                 ]
             ]
@@ -139,7 +141,7 @@ class BoekkooiAMQPExtensionTest extends AbstractExtensionTestCase
         $this->load([
             'commands' => [
                 'my\\Command' => [
-                    'vhost' => '/',
+                    'vhost' => 'root',
                     'exchange' => 'my_exchange'
                 ],
             ]
@@ -155,11 +157,11 @@ class BoekkooiAMQPExtensionTest extends AbstractExtensionTestCase
                 'default' => [],
             ],
             'vhosts' => [
-                '/' => []
+                'root' => ['path' => '/']
             ],
             'commands' => [
                 'my\\Command' => [
-                    'vhost' => '/',
+                    'vhost' => 'root',
                     'exchange' => 'my_exchange'
                 ],
             ]

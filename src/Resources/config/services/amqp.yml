@@ -1,7 +1,7 @@
 services:
   # Abstract service definitions
   boekkooi.amqp.abstract.vhost_connection:
-    class: \AMQPConnection
+    class: AMQPConnection
     arguments: [ [] ]
     calls:
     - [ 'connect', [] ]
@@ -9,21 +9,21 @@ services:
     public: false
 
   boekkooi.amqp.abstract.channel:
-    class: \AMQPChannel
+    class: AMQPChannel
     arguments: [ @boekkooi.amqp.abstract.vhost_connection ]
     abstract: true
     public: false
 
   ## Queues are only used by the publishers
   boekkooi.amqp.abstract.exchange:
-    class: \AMQPExchange
+    class: AMQPExchange
     arguments: [ @boekkooi.amqp.abstract.channel ]
     abstract: true
     public: false
 
   ## Queues are only used by handlers
   boekkooi.amqp.abstract.queue:
-    class: \AMQPQueue
+    class: AMQPQueue
     arguments: [ @boekkooi.amqp.abstract.channel ]
     abstract: true
     public: false
