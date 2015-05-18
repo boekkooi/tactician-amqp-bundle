@@ -4,39 +4,21 @@ namespace Boekkooi\Bundle\AMQP\Command;
 use Boekkooi\Bundle\AMQP\DependencyInjection\BoekkooiAMQPExtension;
 use Boekkooi\Tactician\AMQP\AMQPCommand;
 use League\Tactician\CommandBus;
-use Symfony\Component\Console\Command\Command;
+use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * A command class for consuming one or multiple amqp queues
  */
-class HandleCommand extends Command
+class QueueConsumeCommand extends ContainerAwareCommand
 {
-    /**
-     * @var CommandBus
-     */
-    private $commandBus;
-    /**
-     * @var ContainerInterface
-     */
-    private $container;
-
-    public function __construct(CommandBus $commandBus, ContainerInterface $container)
-    {
-        parent::__construct();
-
-        $this->commandBus = $commandBus;
-        $this->container = $container;
-    }
-
     protected function configure()
     {
         $this
-            ->setName('amqp:handle')
+            ->setName('amqp:consume')
             ->setDescription('Handle messages in a AMQP queue')
             ->addOption('amount', 'a', InputOption::VALUE_OPTIONAL, 'The amount of messages to consume', 100)
             ->addArgument('vhost', InputArgument::REQUIRED, 'The vhost where the queue is located')
@@ -54,7 +36,7 @@ class HandleCommand extends Command
 
         $queues = $this->getQueues($input->getArgument('vhost'), (array)$input->getArgument('queues'));
 
-        $commandBus = $this->commandBus;
+        /** @var \AMQPQueue $consumeQueue */
         $consumeQueue = array_pop($queues);
 
         # In case of multiple queues we bind without any arguments
@@ -64,6 +46,7 @@ class HandleCommand extends Command
         }
 
         # The last queue is bound to the callback
+        $commandBus = $this->getCommandBus();
         $consumeQueue->consume(
             function (\AMQPEnvelope $envelope, \AMQPQueue $queue) use ($commandBus, &$limit) {
                 $commandBus->handle(new AMQPCommand($envelope, $queue));
@@ -83,7 +66,7 @@ class HandleCommand extends Command
     {
         $queues = [];
         foreach ($names as $name) {
-            $queues[] = $this->container->get(sprintf(
+            $queues[] = $this->getContainer()->get(sprintf(
                 BoekkooiAMQPExtension::SERVICE_VHOST_QUEUE_ID,
                 $vhost,
                 $name
@@ -91,5 +74,13 @@ class HandleCommand extends Command
         }
 
         return $queues;
+    }
+
+    /**
+     * @return CommandBus
+     */
+    private function getCommandBus()
+    {
+        return $this->getContainer()->get('boekkooi.amqp.consume_command_bus');
     }
 }

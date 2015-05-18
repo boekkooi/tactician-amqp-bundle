@@ -3,8 +3,6 @@ services:
   boekkooi.amqp.abstract.vhost_connection:
     class: AMQPConnection
     arguments: [ [] ]
-    calls:
-    - [ 'connect', [] ]
     abstract: true
     public: false
 

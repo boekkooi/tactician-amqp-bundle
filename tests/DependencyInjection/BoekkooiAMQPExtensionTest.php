@@ -4,6 +4,7 @@ namespace Tests\Boekkooi\Bundle\AMQP\DependencyInjection;
 use Boekkooi\Bundle\AMQP\DependencyInjection\BoekkooiAMQPExtension;
 use Boekkooi\Bundle\AMQP\Exception\InvalidConfigurationException;
 use Matthias\SymfonyDependencyInjectionTest\PhpUnit\AbstractExtensionTestCase;
+use Matthias\SymfonyDependencyInjectionTest\PhpUnit\DefinitionHasMethodCallConstraint;
 use Symfony\Component\DependencyInjection\Reference;
 
 class BoekkooiAMQPExtensionTest extends AbstractExtensionTestCase
@@ -41,7 +42,7 @@ class BoekkooiAMQPExtensionTest extends AbstractExtensionTestCase
         $this->assertContainerBuilderHasService('boekkooi.amqp.middleware.envelope_transformer');
         $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.middleware.envelope_transformer', 0, new Reference('boekkooi.amqp.tactician.transformer'));
 
-        $this->assertContainerBuilderHasService('boekkooi.amqp.command.handle');
+        $this->assertContainerBuilderHasService('boekkooi.amqp.consume_command_bus');
     }
 
     public function testBasicConfig()
@@ -56,12 +57,28 @@ class BoekkooiAMQPExtensionTest extends AbstractExtensionTestCase
                     'exchanges' => [
                         'my_exchange' => [
                             'type' => 'direct'
+                        ],
+                        'second_exchange' => [
+                            'type' => 'fanout',
+                            'arguments' => [ 'key' => 'val' ],
+                            'passive' => true,
+                            'durable' => false
                         ]
                     ],
                     'queues' => [
                         'test' => [
                             'binds' => [
                                 'my_exchange' => []
+                            ]
+                        ],
+                        'test2' => [
+                            'arguments' => [ 'key' => 'val' ],
+                            'passive' => false,
+                            'durable' => false,
+                            'exclusive' => false,
+                            'auto_delete' => false,
+                            'binds' => [
+                                'second_exchange' => []
                             ]
                         ]
                     ]
@@ -90,15 +107,28 @@ class BoekkooiAMQPExtensionTest extends AbstractExtensionTestCase
         $exchangeId = sprintf(BoekkooiAMQPExtension::SERVICE_VHOST_EXCHANGE_ID, 'root', 'my_exchange');
         $this->assertContainerBuilderHasService($exchangeId);
         $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($exchangeId, 'setName', [ 'my_exchange' ]);
-        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($exchangeId, 'setArguments', [ [] ]);
+        $this->assertContainerBuilderHasServiceDefinitionWithoutMethodCall($exchangeId, 'setArguments', [ [] ]);
         $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($exchangeId, 'setType', [ AMQP_EX_TYPE_DIRECT ]);
         $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($exchangeId, 'setFlags', [ AMQP_DURABLE ]);
+
+        $exchangeId = sprintf(BoekkooiAMQPExtension::SERVICE_VHOST_EXCHANGE_ID, 'root', 'second_exchange');
+        $this->assertContainerBuilderHasService($exchangeId);
+        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($exchangeId, 'setName', [ 'second_exchange' ]);
+        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($exchangeId, 'setArguments', [ ['key' => 'val'] ]);
+        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($exchangeId, 'setType', [ AMQP_EX_TYPE_FANOUT ]);
+        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($exchangeId, 'setFlags', [ AMQP_PASSIVE ]);
 
         $queueId = sprintf(BoekkooiAMQPExtension::SERVICE_VHOST_QUEUE_ID, 'root', 'test');
         $this->assertContainerBuilderHasService($queueId);
         $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($queueId, 'setName', [ 'test' ]);
-        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($queueId, 'setArguments', [ [] ]);
+        $this->assertContainerBuilderHasServiceDefinitionWithoutMethodCall($queueId, 'setArguments', [ [] ]);
         $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($queueId, 'setFlags', [ AMQP_DURABLE ]);
+
+        $queueId = sprintf(BoekkooiAMQPExtension::SERVICE_VHOST_QUEUE_ID, 'root', 'test2');
+        $this->assertContainerBuilderHasService($queueId);
+        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($queueId, 'setName', [ 'test2' ]);
+        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($queueId, 'setArguments', [ ['key' => 'val'] ]);
+        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($queueId, 'setFlags', [ AMQP_NOPARAM ]);
 
         $queueBindsId = sprintf(BoekkooiAMQPExtension::PARAMETER_VHOST_QUEUE_BINDS, 'root', 'test');
         $this->assertContainerBuilderHasParameter($queueBindsId, ['my_exchange' => [ 'routing_key' => null, 'arguments' => [] ]]);
@@ -166,5 +196,23 @@ class BoekkooiAMQPExtensionTest extends AbstractExtensionTestCase
                 ],
             ]
         ]);
+    }
+
+    /**
+     * Assert that the ContainerBuilder for this test has a service definition with the given id, which has no method
+     * call to the given method with the given arguments.
+     *
+     * @param string $serviceId
+     * @param string $method
+     * @param array $arguments
+     */
+    protected function assertContainerBuilderHasServiceDefinitionWithoutMethodCall(
+        $serviceId,
+        $method,
+        array $arguments = array()
+    ) {
+        $definition = $this->container->findDefinition($serviceId);
+
+        self::assertThat($definition, new \PHPUnit_Framework_Constraint_Not(new DefinitionHasMethodCallConstraint($method, $arguments)));
     }
 }

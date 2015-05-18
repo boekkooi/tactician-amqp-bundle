@@ -19,8 +19,11 @@ class BoekkooiAMQPExtension extends Extension
     const SERVICE_VHOST_CHANNEL_ID = 'boekkooi.amqp.vhost.%s.channel';
     const SERVICE_VHOST_EXCHANGE_ID = 'boekkooi.amqp.vhost.%s.exchange.%s';
     const SERVICE_VHOST_QUEUE_ID = 'boekkooi.amqp.vhost.%s.queue.%s';
-    const PARAMETER_VHOST_MAP = 'boekkooi.amqp.vhost.map';
     const PARAMETER_VHOST_QUEUE_BINDS = 'boekkooi.amqp.vhost.%s.queue.%s.binds';
+
+    const PARAMETER_VHOST_LIST = 'boekkooi.amqp.vhosts';
+    const PARAMETER_VHOST_EXCHANGE_LIST = 'boekkooi.amqp.vhost.%s.exchanges';
+    const PARAMETER_VHOST_QUEUE_LIST = 'boekkooi.amqp.vhost.%s.queues';
 
     /**
      * {@inheritDoc}
@@ -40,7 +43,7 @@ class BoekkooiAMQPExtension extends Extension
         $this->configureCommands($container, $config);
         $this->configureMiddleware($container, $config);
 
-        $loader->load('symfony.yml');
+        $this->configureConsoleCommands($container, $config);
     }
 
     private function loadConnections(ContainerBuilder $container, array $config)
@@ -66,18 +69,21 @@ class BoekkooiAMQPExtension extends Extension
 
     private function loadVHost(ContainerBuilder $container, array $config)
     {
+        $vhosts = [];
         foreach ($config['vhosts'] as $name => $info) {
             $connectionServiceId = sprintf(self::SERVICE_CONNECTION_ID, $info['connection']);
             if (!$container->hasDefinition($connectionServiceId)) {
                 throw InvalidConfigurationException::noConnectionForVHost($info['connection'], $name);
             }
 
+            $vhosts[] = $name;
             $vhostConnectionServiceId = sprintf(self::SERVICE_VHOST_CONNECTION_ID, $name);
             $vhostChannelServiceId = sprintf(self::SERVICE_VHOST_CHANNEL_ID, $name);
 
             // Create connection service
             $def = new DefinitionDecorator($connectionServiceId);
             $def->addMethodCall('setVhost', [ $info['path'] ]);
+            $def->addMethodCall('connect', []);
             $container->setDefinition($vhostConnectionServiceId, $def);
 
             // Create channel service
@@ -92,6 +98,8 @@ class BoekkooiAMQPExtension extends Extension
             // Create queues
             $this->loadVHostQueues($container, $name, $info, $channelServiceRef);
         }
+
+        $container->setParameter(self::PARAMETER_VHOST_LIST, $vhosts);
     }
 
     private function loadVHostExchanges(ContainerBuilder $container, $vhost, array $config, Reference $channel)
@@ -103,13 +111,13 @@ class BoekkooiAMQPExtension extends Extension
             'topic' => AMQP_EX_TYPE_TOPIC
         ];
 
+        $exchanges = [];
         foreach ($config['exchanges'] as $name => $info) {
             $def = new DefinitionDecorator('boekkooi.amqp.abstract.exchange');
             $def->setPublic(true);
             $def->replaceArgument(0, $channel);
 
             $def->addMethodCall('setName', [ $name ]);
-            $def->addMethodCall('setArguments', [ $info['arguments'] ]);
             $def->addMethodCall('setType', [
                 $typeMap[$info['type']]
             ]);
@@ -117,29 +125,41 @@ class BoekkooiAMQPExtension extends Extension
                 ($info['passive'] ? AMQP_PASSIVE : AMQP_NOPARAM) |
                 ($info['durable'] ? AMQP_DURABLE : AMQP_NOPARAM)
             ]);
+            if (!empty($info['arguments'])) {
+                $def->addMethodCall('setArguments', [$info['arguments']]);
+            }
 
             $container->setDefinition(
                 sprintf(self::SERVICE_VHOST_EXCHANGE_ID, $vhost, $name),
                 $def
             );
+
+            $exchanges[] = $name;
         }
+
+        $container->setParameter(sprintf(self::PARAMETER_VHOST_EXCHANGE_LIST, $vhost), $exchanges);
     }
 
     private function loadVHostQueues(ContainerBuilder $container, $vhost, array $config, Reference $channel)
     {
+        $queues = [];
         foreach ($config['queues'] as $name => $info) {
             $def = new DefinitionDecorator('boekkooi.amqp.abstract.queue');
             $def->setPublic(true);
             $def->replaceArgument(0, $channel);
 
             $def->addMethodCall('setName', [ $name ]);
-            $def->addMethodCall('setArguments', [ $info['arguments'] ]);
             $def->addMethodCall('setFlags', [
                 ($info['passive'] ? AMQP_PASSIVE : AMQP_NOPARAM) |
                 ($info['durable'] ? AMQP_DURABLE : AMQP_NOPARAM) |
                 ($info['exclusive'] ? AMQP_EXCLUSIVE : AMQP_NOPARAM) |
                 ($info['auto_delete'] ? AMQP_AUTODELETE : AMQP_NOPARAM)
             ]);
+            // In some setups a empty array for setArguments will cause a segfault
+            // so let's avoid that
+            if (!empty($info['arguments'])) {
+                $def->addMethodCall('setArguments', [$info['arguments']]);
+            }
 
             $container->setDefinition(
                 sprintf(self::SERVICE_VHOST_QUEUE_ID, $vhost, $name),
@@ -150,7 +170,11 @@ class BoekkooiAMQPExtension extends Extension
                 sprintf(self::PARAMETER_VHOST_QUEUE_BINDS, $vhost, $name),
                 $info['binds']
             );
+
+            $queues[] = $name;
         }
+
+        $container->setParameter(sprintf(self::PARAMETER_VHOST_QUEUE_LIST, $vhost), $queues);
     }
 
     private function configureCommands(ContainerBuilder $container, array $config)
@@ -205,5 +229,11 @@ class BoekkooiAMQPExtension extends Extension
                 'boekkooi.amqp.tactician.serializer.format',
                 $config['serializer_format']
             );
+    }
+
+    private function configureConsoleCommands(ContainerBuilder $container, array $config)
+    {
+        $container
+            ->setAlias('boekkooi.amqp.consume_command_bus', $config['command_bus']);
     }
 }

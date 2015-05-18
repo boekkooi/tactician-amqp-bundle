@@ -1,7 +1,7 @@
 <?php
 namespace Tests\Boekkooi\Bundle\AMQP\Command;
 
-use Boekkooi\Bundle\AMQP\Command\HandleCommand;
+use Boekkooi\Bundle\AMQP\Command\QueueConsumeCommand;
 use Boekkooi\Bundle\AMQP\DependencyInjection\BoekkooiAMQPExtension;
 use Boekkooi\Tactician\AMQP\AMQPCommand;
 use League\Tactician\CommandBus;
@@ -10,7 +10,7 @@ use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 
-class HandleCommandTest extends \PHPUnit_Framework_TestCase
+class QueueConsumeCommandTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var ContainerInterface|Mockery\MockInterface
@@ -23,7 +23,7 @@ class HandleCommandTest extends \PHPUnit_Framework_TestCase
     private $commandBus;
 
     /**
-     * @var HandleCommand
+     * @var QueueConsumeCommand
      */
     private $command;
 
@@ -35,8 +35,15 @@ class HandleCommandTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $this->commandBus = Mockery::mock(CommandBus::class);
+
         $this->container = Mockery::mock(ContainerInterface::class);
-        $this->command = new HandleCommand($this->commandBus, $this->container);
+        $this->container
+            ->shouldReceive('get')
+            ->with('boekkooi.amqp.consume_command_bus')
+            ->andReturn($this->commandBus);
+
+        $this->command = new QueueConsumeCommand($this->commandBus, $this->container);
+        $this->command->setContainer($this->container);
 
         $this->commandTester = new CommandTester($this->command);
     }
