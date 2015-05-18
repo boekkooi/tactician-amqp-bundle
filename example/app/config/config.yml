@@ -1,0 +1,55 @@
+framework:
+  secret:          secret
+  test: ~
+  router:          { resource: "%kernel.root_dir%/config/routing.yml" }
+  csrf_protection: true
+  form:            false
+  validation:      false
+  templating:      { engines: ['php'] }
+  translator:      { fallback: en }
+  profiler:
+    collect: false
+  session:
+    storage_id: session.storage.mock_file
+
+
+boekkooi_amqp:
+  connections:
+    default:
+      timeout:
+        read: 60
+
+  vhosts:
+    main:
+      path: '/'
+      connection: default
+      exchanges:
+        direct_exchange:
+          type: direct
+      queues:
+        direct_queue:
+          binds:
+            'direct_exchange':
+              routing_key: 'direct_command'
+
+  commands:
+    'Example\Command\DirectCommand':
+      vhost: main
+      exchange: 'direct_exchange'
+      routing_key: 'direct_command'
+
+tactician:
+  commandbus:
+    default:
+      middleware:
+        - boekkooi.amqp.middleware.command_transformer
+        - boekkooi.amqp.middleware.publish
+        - boekkooi.amqp.middleware.consume
+        - boekkooi.amqp.middleware.envelope_transformer
+        - tactician.middleware.command_handler
+
+services:
+  example.direct_command_handler:
+    class: Example\CommandHandler\DirectCommandHandler
+    tags:
+        - { name: tactician.handler, command: Example\Command\DirectCommand }

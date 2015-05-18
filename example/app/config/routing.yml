@@ -1,0 +1,4 @@
+root:
+  path:  '/'
+  defaults:
+    _controller: ExampleBundle:Default:index
