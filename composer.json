@@ -15,11 +15,14 @@
     "symfony/yaml": "~2.3",
     "symfony/serializer": "~2.3",
     "symfony/console": "~2.3",
+    "symfony/dependency-injection": "~2.3,>=2.3.3",
 
     "league/tactician-bundle": "^0.2",
     "boekkooi/tactician-amqp": "^0.1"
   },
   "require-dev": {
+    "symfony/finder": "~2.3",
+
     "phpunit/phpunit": "~4.3",
     "mockery/mockery": "~0.9, >= 0.9.4",
     "matthiasnoback/symfony-config-test": "~1.1",
