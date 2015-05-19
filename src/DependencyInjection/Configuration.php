@@ -29,7 +29,7 @@ class Configuration implements ConfigurationInterface
 
     protected function addConnections(ArrayNodeDefinition $node)
     {
-        $integerNormalizer = function($val) { return strval(intval($val)) === $val ? intval($val) : $val; };
+        $integerNormalizer = function ($val) { return strval(intval($val)) === $val ? intval($val) : $val; };
 
         $node
             ->children()
