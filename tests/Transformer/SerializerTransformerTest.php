@@ -151,7 +151,9 @@ class SerializerTransformerTest extends \PHPUnit_Framework_TestCase
             [ [] ],
             [ [ 'vhost' => '/' ] ],
             [ [ 'vhost' => null ] ],
+            [ [ 'vhost' => false ] ],
             [ [ 'vhost' => '/', 'exchange' => null ] ],
+            [ [ 'vhost' => '/', 'exchange' => false ] ],
             [ [ 'vhost' => '/', 'exchange' => 'e', 'routing_key' => [] ] ],
             [ [ 'vhost' => '/', 'exchange' => 'e', 'flags' => 'string' ] ],
             [ [ 'vhost' => '/', 'exchange' => 'e', 'attributes' => 'string' ] ]
