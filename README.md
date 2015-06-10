@@ -31,6 +31,4 @@ Special thanks go to:
 ## TODO
 - Support for none durable exchange and queues
 - Add more documentation and examples
-- Kick @rosstuck because he made `doctrine.orm.entity_manager` required for the [TacticianBundle](https://github.com/thephpleague/tactician-bundle)
 - Thank @rosstuck for is great work on tactician and buy him a drink or 2
-

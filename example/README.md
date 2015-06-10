@@ -12,8 +12,6 @@ cd /my/path/to/TacticianAMQPBundle
 composer install
 ```
 
-*As of writing this the TacticianBundle (v0.2) requires `doctrine.orm.entity_manager` to you will need to edit `vendor/league/tactician-bundle/Resources/config/services/services.yml` and comment out the `tactician.middleware.doctrine` service*
-
 ## Running
 To run the example you need to first declare the exchanges and queues using:
 ```BASH
