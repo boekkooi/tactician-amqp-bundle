@@ -88,19 +88,11 @@ class DeclareCommand extends ContainerAwareCommand
      */
     private function getVHostExchanges($vhost)
     {
-        $container = $this->getContainer();
-        $names = $container->getParameter(sprintf(BoekkooiAMQPExtension::PARAMETER_VHOST_EXCHANGE_LIST, $vhost));
-
-        $exchanges = [];
-        foreach ($names as $name) {
-            $exchanges[] = $container->get(sprintf(
-                BoekkooiAMQPExtension::SERVICE_VHOST_EXCHANGE_ID,
-                $vhost,
-                $name
-            ));
-        }
-
-        return $exchanges;
+        return $this->getServicesByParameterWithNames(
+            sprintf(BoekkooiAMQPExtension::PARAMETER_VHOST_EXCHANGE_LIST, $vhost),
+            BoekkooiAMQPExtension::SERVICE_VHOST_EXCHANGE_ID,
+            [ $vhost ]
+        );
     }
 
     /**
@@ -108,18 +100,26 @@ class DeclareCommand extends ContainerAwareCommand
      */
     private function getVHostQueues($vhost)
     {
-        $container = $this->getContainer();
-        $names = $container->getParameter(sprintf(BoekkooiAMQPExtension::PARAMETER_VHOST_QUEUE_LIST, $vhost));
+        return $this->getServicesByParameterWithNames(
+            sprintf(BoekkooiAMQPExtension::PARAMETER_VHOST_QUEUE_LIST, $vhost),
+            BoekkooiAMQPExtension::SERVICE_VHOST_QUEUE_ID,
+            [ $vhost ]
+        );
+    }
 
-        $queues = [];
+    private function getServicesByParameterWithNames($parameter, $serviceNameFormat, array $serviceNameArgs = [])
+    {
+        $container = $this->getContainer();
+        $names = $container->getParameter($parameter);
+
+        $services = [];
         foreach ($names as $name) {
-            $queues[] = $container->get(sprintf(
-                BoekkooiAMQPExtension::SERVICE_VHOST_QUEUE_ID,
-                $vhost,
-                $name
+            $services[] = $container->get(vsprintf(
+                $serviceNameFormat,
+                array_merge($serviceNameArgs, [ $name ])
             ));
         }
 
-        return $queues;
+        return $services;
     }
 }
