@@ -189,16 +189,7 @@ class BoekkooiAMQPExtension extends Extension
             }
 
             $class = ltrim($class, '\\');
-            $commands[$class] = [
-                'vhost' => $info['vhost'],
-                'exchange' => $info['exchange'],
-                'routing_key' => (isset($info['routing_key']) ? $info['routing_key'] : null),
-                'flags' => (
-                    (isset($info['mandatory']) && $info['mandatory'] ? AMQP_MANDATORY : AMQP_NOPARAM) |
-                    (isset($info['immediate']) && $info['immediate'] ? AMQP_IMMEDIATE : AMQP_NOPARAM)
-                ),
-                'attributes' => (isset($info['attributes']) ? $info['attributes'] : [])
-            ];
+            $commands[$class] = $this->retrieveCommandInformation($info);
         }
 
         $def = $container->getDefinition('boekkooi.amqp.tactician.transformer');
@@ -206,6 +197,20 @@ class BoekkooiAMQPExtension extends Extension
 
         $def = $container->getDefinition('boekkooi.amqp.middleware.command_transformer');
         $def->addMethodCall('addSupportedCommands', [array_keys($commands)]);
+    }
+
+    private function retrieveCommandInformation(array $info)
+    {
+        return [
+            'vhost' => $info['vhost'],
+            'exchange' => $info['exchange'],
+            'routing_key' => (isset($info['routing_key']) ? $info['routing_key'] : null),
+            'flags' => (
+                (isset($info['mandatory']) && $info['mandatory'] ? AMQP_MANDATORY : AMQP_NOPARAM) |
+                (isset($info['immediate']) && $info['immediate'] ? AMQP_IMMEDIATE : AMQP_NOPARAM)
+            ),
+            'attributes' => (isset($info['attributes']) ? $info['attributes'] : [])
+        ];
     }
 
     private function configureMiddleware(ContainerBuilder $container, array $config)
