@@ -55,6 +55,12 @@ class QueueConsumeCommand extends ContainerAwareCommand
                 return $limit > 0;
             }
         );
+
+        # Cancel consumption of the queue
+        $consumeQueue->cancel();
+        foreach ($queues as $queue) {
+            $queue->cancel();
+        }
     }
 
     /**

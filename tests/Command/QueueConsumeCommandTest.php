@@ -151,6 +151,8 @@ class QueueConsumeCommandTest extends \PHPUnit_Framework_TestCase
                     } while (($callback($envelope, $queue)));
                 }
             );
+        $queue
+            ->shouldReceive('cancel');
         return $queue;
     }
 }
