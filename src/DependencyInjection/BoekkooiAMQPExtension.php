@@ -170,10 +170,8 @@ class BoekkooiAMQPExtension extends Extension
         $transformerDef = $container->getDefinition('boekkooi.amqp.tactician.command_transformer');
         $middlewareDef = $container->getDefinition('boekkooi.amqp.middleware.command_transformer');
 
-        $commands = [];
         foreach ($config['commands'] as $class => $info) {
             $command = $this->configureCommand($container, $class, $info);
-            $commands[$command->getClass()] = $config;
 
             $transformerDef->addMethodCall('registerCommand', [ $command ]);
             $middlewareDef->addMethodCall('addSupportedCommand', [ $command->getClass() ]);

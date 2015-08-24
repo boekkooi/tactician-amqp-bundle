@@ -1,7 +1,6 @@
 <?php
 namespace Boekkooi\Bundle\AMQP\Command;
 
-use Boekkooi\Bundle\AMQP\Consumer;
 use Boekkooi\Bundle\AMQP\DependencyInjection\BoekkooiAMQPExtension;
 use Boekkooi\Bundle\AMQP\Tools\SchemaTool;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
