@@ -1,7 +1,9 @@
 <?php
 namespace Boekkooi\Bundle\AMQP\Command;
 
+use Boekkooi\Bundle\AMQP\Consumer;
 use Boekkooi\Bundle\AMQP\DependencyInjection\BoekkooiAMQPExtension;
+use Boekkooi\Bundle\AMQP\Tools\SchemaTool;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -29,49 +31,30 @@ class DeclareCommand extends ContainerAwareCommand
 
     /**
      * @param $vhost
+     * @param OutputInterface $output
      */
     protected function setupVHost($vhost, OutputInterface $output)
     {
         $output->writeln(sprintf('<info>Setting up vhost %s</info>', $vhost));
 
-        $output->writeln('Declaring durable exchanges:');
+        $output->writeln('Found exchanges:');
         $exchanges = $this->getVHostExchanges($vhost);
         foreach ($exchanges as $exchange) {
-            if (($exchange->getFlags() & AMQP_DURABLE) !== AMQP_DURABLE) {
-                $output->writeln(sprintf("<comment>- %s: skipped</comment>", $exchange->getName()));
-                continue;
-            }
-
-            $output->write(sprintf("- %s ...\r", $exchange->getName()));
-            $exchange->declareExchange();
-            $output->writeln(sprintf("- %s: <info>done</info>", $exchange->getName()));
+            $output->writeln(sprintf("- %s", $exchange->getName()));
         }
 
-        $output->writeln('Declaring durable queues:');
+        $output->writeln('Found queues:');
         $queues = $this->getVHostQueues($vhost);
         foreach ($queues as $queue) {
-            if (($queue->getFlags() & AMQP_DURABLE) !== AMQP_DURABLE) {
-                $output->writeln(sprintf("<comment>- %s: skipped</comment>", $queue->getName()));
-                return;
-            }
-
-            $output->write(sprintf("- %s ...\r", $queue->getName()));
-            $this->setupQueue($queue, $vhost);
-            $output->writeln(sprintf("- %s: <info>done</info>", $queue->getName()));
+            $output->writeln(sprintf("- %s", $queue->getName()));
         }
-    }
 
-    private function setupQueue(\AMQPQueue $queue, $vhost)
-    {
-        $queue->declareQueue();
+        // Do some actual work
+        $output->writeln('Declaring exchanges & queues');
+        $schemaTool = new SchemaTool($this->getVhostConnection($vhost));
+        $schemaTool->declareDefinitions($exchanges, $queues);
 
-        $container = $this->getContainer();
-        $queueBinds = $container->getParameter(
-            sprintf(BoekkooiAMQPExtension::PARAMETER_VHOST_QUEUE_BINDS, $vhost, $queue->getName())
-        );
-        foreach ($queueBinds as $bindExchange => $bindParams) {
-            $queue->bind($bindExchange, $bindParams['routing_key'], $bindParams['arguments']);
-        }
+        $output->writeln("<info>done</info>");
     }
 
     /**
@@ -84,7 +67,20 @@ class DeclareCommand extends ContainerAwareCommand
     }
 
     /**
-     * @return \AMQPExchange[]
+     * @param string $vhost
+     * @return \Boekkooi\Bundle\AMQP\LazyConnection
+     */
+    private function getVhostConnection($vhost)
+    {
+        return $this->getContainer()->get(sprintf(
+            BoekkooiAMQPExtension::SERVICE_VHOST_CONNECTION_ID,
+            $vhost
+        ));
+    }
+
+    /**
+     * @param string $vhost
+     * @return \Boekkooi\Bundle\AMQP\LazyExchange[]
      */
     private function getVHostExchanges($vhost)
     {
@@ -96,7 +92,8 @@ class DeclareCommand extends ContainerAwareCommand
     }
 
     /**
-     * @return \AMQPQueue[]
+     * @param string $vhost
+     * @return \Boekkooi\Bundle\AMQP\LazyQueue[]
      */
     private function getVHostQueues($vhost)
     {
