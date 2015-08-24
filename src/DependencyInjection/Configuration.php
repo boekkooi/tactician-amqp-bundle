@@ -196,7 +196,7 @@ class Configuration implements ConfigurationInterface
         $node
             ->children()
                 ->scalarNode('command_bus')
-                    ->info('The tactician command bus to use for queue consumtion')
+                    ->info('The tactician command bus to use for queue consumption')
                     ->defaultValue('tactician.commandbus')
                 ->end()
                 ->scalarNode('envelope_transformer')->defaultValue('boekkooi.amqp.tactician.transformer')->end()

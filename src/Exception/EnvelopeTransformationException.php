@@ -50,7 +50,7 @@ class EnvelopeTransformationException extends \RuntimeException implements Excep
     public static function unsupportedFormat(\AMQPEnvelope $envelope, $format)
     {
         $exception = new static(sprintf(
-            'Unsupported derialization format %s provided by the envelope',
+            'Unsupported deserialization format %s provided by the envelope',
             $format
         ));
         $exception->envelope = $envelope;
