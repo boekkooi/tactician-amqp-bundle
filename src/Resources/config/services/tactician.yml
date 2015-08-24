@@ -9,7 +9,7 @@ parameters:
 
   boekkooi.amqp.middleware.publish.class: Boekkooi\Tactician\AMQP\Middleware\PublishMiddleware
   boekkooi.amqp.middleware.consume.class: Boekkooi\Tactician\AMQP\Middleware\ConsumeMiddleware
-  boekkooi.amqp.middleware.command_transformer.class: Boekkooi\Bundle\AMQP\Middleware\CommandTransformerMiddleware
+  boekkooi.amqp.middleware.command_transformer.class: Boekkooi\Tactician\AMQP\Middleware\CommandTransformerMiddleware
   boekkooi.amqp.middleware.envelope_transformer.class: Boekkooi\Tactician\AMQP\Middleware\EnvelopeTransformerMiddleware
 
 services:
