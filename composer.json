@@ -23,7 +23,7 @@
   "require-dev": {
     "symfony/finder": "~2.3",
 
-    "phpunit/phpunit": "~4.3",
+    "phpunit/phpunit": "~4.8",
     "mockery/mockery": "~0.9, >= 0.9.4",
     "matthiasnoback/symfony-config-test": "~1.1",
     "matthiasnoback/symfony-dependency-injection-test": "^0.7"
