@@ -171,10 +171,10 @@ class BoekkooiAMQPExtension extends Extension
         $middlewareDef = $container->getDefinition('boekkooi.amqp.middleware.command_transformer');
 
         foreach ($config['commands'] as $class => $info) {
-            $command = $this->configureCommand($container, $class, $info);
+            $commandReference = $this->configureCommand($container, $class, $info);
 
-            $transformerDef->addMethodCall('registerCommand', [ $command ]);
-            $middlewareDef->addMethodCall('addSupportedCommand', [ $command->getClass() ]);
+            $transformerDef->addMethodCall('registerCommand', [ $commandReference ]);
+            $middlewareDef->addMethodCall('addSupportedCommand', [ $class ]);
         }
     }
 
@@ -206,7 +206,33 @@ class BoekkooiAMQPExtension extends Extension
             );
         }
 
-        return $commandConfig;
+        $commandId = sprintf(
+            'boekkooi.amqp.vhost.%s.command.config.%s',
+            $commandConfig->getVhost(),
+            sha1(implode('|', [
+                $commandConfig->getClass(),
+                $commandConfig->getVhost(),
+                $commandConfig->getExchange(),
+                $commandConfig->getRoutingKey(),
+                $commandConfig->getFlags(),
+                count($commandConfig->getAttributes())
+            ]))
+        );
+        $commandDef = new Definition(
+            CommandConfiguration::class,
+            [
+                $commandConfig->getClass(),
+                $commandConfig->getVhost(),
+                $commandConfig->getExchange(),
+                $commandConfig->getRoutingKey(),
+                $commandConfig->getFlags(),
+                $commandConfig->getAttributes()
+            ]
+        );
+        $commandDef->setPublic(false);
+        $container->setDefinition($commandId, $commandDef);
+
+        return new Reference($commandId);
     }
 
     private function configureTransformers(ContainerBuilder $container, array $config)

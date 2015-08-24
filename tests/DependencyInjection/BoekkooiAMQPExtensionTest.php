@@ -4,8 +4,10 @@ namespace Tests\Boekkooi\Bundle\AMQP\DependencyInjection;
 use Boekkooi\Bundle\AMQP\CommandConfiguration;
 use Boekkooi\Bundle\AMQP\DependencyInjection\BoekkooiAMQPExtension;
 use Boekkooi\Bundle\AMQP\Exception\InvalidConfigurationException;
+use League\Tactician\Bundle\DependencyInjection\TacticianExtension;
 use Matthias\SymfonyDependencyInjectionTest\PhpUnit\AbstractExtensionTestCase;
 use Matthias\SymfonyDependencyInjectionTest\PhpUnit\DefinitionHasMethodCallConstraint;
+use Symfony\Component\DependencyInjection\Dumper;
 use Symfony\Component\DependencyInjection\Reference;
 
 class BoekkooiAMQPExtensionTest extends AbstractExtensionTestCase
@@ -168,14 +170,21 @@ class BoekkooiAMQPExtensionTest extends AbstractExtensionTestCase
         $this->assertContainerBuilderHasParameter($queueListId, ['test', 'test2']);
 
         $transformerId = 'boekkooi.amqp.tactician.command_transformer';
-        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($transformerId, 'registerCommand', [
-            new CommandConfiguration('my\\Command', 'root', 'my_exchange', null, AMQP_MANDATORY, [])
-        ]);
+        $this->assertContainerBuilderHasService($transformerId);
+
+        // Check that the command config is correctly set
+        $transformerDef = $this->container->getDefinition('boekkooi.amqp.tactician.command_transformer');
+        $commandConfigId = (string)$transformerDef->getMethodCalls()[0][1][0];
+        $commandConfigDef = $this->container->getDefinition($commandConfigId);
+        $this->assertEquals(CommandConfiguration::class, $commandConfigDef->getClass());
+        $this->assertEquals(['my\\Command', 'root', 'my_exchange', null, AMQP_MANDATORY, []], $commandConfigDef->getArguments());
 
         $transformerMiddlewareId = 'boekkooi.amqp.middleware.command_transformer';
         $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($transformerMiddlewareId, 'addSupportedCommand', [
             'my\\Command'
         ]);
+
+        $this->assertContainerCanBeDumped();
     }
 
     public function testMissingVHostConnection()
@@ -227,6 +236,34 @@ class BoekkooiAMQPExtensionTest extends AbstractExtensionTestCase
     }
 
     /**
+     * @dataProvider provideDumperClasses
+     */
+    public function testContainerCanBeDumped($dumperClass)
+    {
+        $this->load();
+
+        // Load tactician
+        $tacticianExt = new TacticianExtension();
+        $tacticianExt->load([], $this->container);
+
+        /** @var Dumper\Dumper $dumper */
+        $dumper = new $dumperClass($this->container);
+        $this->assertInstanceOf(Dumper\Dumper::class, $dumper);
+
+        $dumper->dump();
+    }
+
+    public function provideDumperClasses()
+    {
+        return [
+            [ Dumper\XmlDumper::class ],
+            [ Dumper\PhpDumper::class ],
+            [ Dumper\GraphvizDumper::class ],
+            [ Dumper\YamlDumper::class ],
+        ];
+    }
+
+    /**
      * Assert that the ContainerBuilder for this test has a service definition with the given id, which has no method
      * call to the given method with the given arguments.
      *
@@ -242,5 +279,26 @@ class BoekkooiAMQPExtensionTest extends AbstractExtensionTestCase
         $definition = $this->container->findDefinition($serviceId);
 
         self::assertThat($definition, new \PHPUnit_Framework_Constraint_Not(new DefinitionHasMethodCallConstraint($method, $arguments)));
+    }
+
+    /**
+     * Assert that the current container can be dumped.
+     */
+    private function assertContainerCanBeDumped()
+    {
+        // Load tactician
+        $tacticianExt = new TacticianExtension();
+        $tacticianExt->load([], $this->container);
+
+        $dumperCalls = $this->provideDumperClasses();
+        foreach ($dumperCalls as $dumperCall) {
+            $dumperClass = $dumperCall[0];
+
+            /** @var Dumper\Dumper $dumper */
+            $dumper = new $dumperClass($this->container);
+            $this->assertInstanceOf(Dumper\Dumper::class, $dumper);
+
+            $dumper->dump();
+        }
     }
 }
