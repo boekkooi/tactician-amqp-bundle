@@ -38,6 +38,9 @@ class BoekkooiAMQPExtensionTest extends AbstractExtensionTestCase
         $this->assertContainerBuilderHasService('boekkooi.amqp.tactician.response_transformer');
         $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.tactician.response_transformer', 0, new Reference('boekkooi.amqp.tactician.serializer'));
 
+        $this->assertContainerBuilderHasParameter('boekkooi.amqp.tactician.serializer.format', 'json');
+        $this->assertContainerBuilderHasParameter('boekkooi.amqp.tactician.serializer.service', 'boekkooi.amqp.tactician.serializer');
+
         $this->assertContainerBuilderHasService('boekkooi.amqp.middleware.publish');
         $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.middleware.publish', 0, new Reference('boekkooi.amqp.tactician.publisher'));
         $this->assertContainerBuilderHasService('boekkooi.amqp.middleware.consume');

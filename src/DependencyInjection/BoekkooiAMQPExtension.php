@@ -216,6 +216,11 @@ class BoekkooiAMQPExtension extends Extension
                 'boekkooi.amqp.tactician.serializer.format',
                 $config['serializer_format']
             );
+        $container
+            ->setParameter(
+                'boekkooi.amqp.tactician.serializer.service',
+                $config['serializer']
+            );
 
         $commandSerializer = new Reference($config['serializer']);
         foreach (['command_transformer', 'envelope_transformer', 'response_transformer'] as $transformer) {
