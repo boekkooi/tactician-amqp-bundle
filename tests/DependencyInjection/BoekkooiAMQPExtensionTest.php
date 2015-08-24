@@ -35,6 +35,8 @@ class BoekkooiAMQPExtensionTest extends AbstractExtensionTestCase
         $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.tactician.envelope_transformer', 0, new Reference('boekkooi.amqp.tactician.serializer'));
         $this->assertContainerBuilderHasService('boekkooi.amqp.tactician.command_transformer');
         $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.tactician.command_transformer', 0, new Reference('boekkooi.amqp.tactician.serializer'));
+        $this->assertContainerBuilderHasService('boekkooi.amqp.tactician.response_transformer');
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.tactician.response_transformer', 0, new Reference('boekkooi.amqp.tactician.serializer'));
 
         $this->assertContainerBuilderHasService('boekkooi.amqp.middleware.publish');
         $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.middleware.publish', 0, new Reference('boekkooi.amqp.tactician.publisher'));
@@ -43,6 +45,8 @@ class BoekkooiAMQPExtensionTest extends AbstractExtensionTestCase
         $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.middleware.command_transformer', 0, new Reference('boekkooi.amqp.tactician.command_transformer'));
         $this->assertContainerBuilderHasService('boekkooi.amqp.middleware.envelope_transformer');
         $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.middleware.envelope_transformer', 0, new Reference('boekkooi.amqp.tactician.envelope_transformer'));
+        $this->assertContainerBuilderHasService('boekkooi.amqp.middleware.response_transformer');
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.middleware.response_transformer', 0, new Reference('boekkooi.amqp.tactician.response_transformer'));
 
         $this->assertContainerBuilderHasService('boekkooi.amqp.consume_command_bus');
     }

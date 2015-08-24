@@ -432,6 +432,7 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
             'command_bus' => 'tactician.commandbus',
             'envelope_transformer' => 'boekkooi.amqp.tactician.envelope_transformer',
             'command_transformer' => 'boekkooi.amqp.tactician.command_transformer',
+            'response_transformer' => 'boekkooi.amqp.tactician.response_transformer',
             'serializer' => 'boekkooi.amqp.tactician.serializer',
             'serializer_format' => 'json'
         ];

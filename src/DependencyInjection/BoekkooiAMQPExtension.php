@@ -220,7 +220,7 @@ class BoekkooiAMQPExtension extends Extension
             );
 
         $commandSerializer = new Reference($config['serializer']);
-        foreach (['command_transformer' , 'envelope_transformer'] as $transformer) {
+        foreach (['command_transformer', 'envelope_transformer', 'response_transformer'] as $transformer) {
             $container
                 ->getDefinition('boekkooi.amqp.tactician.' . $transformer)
                 ->replaceArgument(0, $commandSerializer);
@@ -238,6 +238,11 @@ class BoekkooiAMQPExtension extends Extension
         $container
             ->getDefinition('boekkooi.amqp.middleware.command_transformer')
             ->replaceArgument(0, $commandTransformer);
+
+        $responseTransformer = new Reference($config['response_transformer']);
+        $container
+            ->getDefinition('boekkooi.amqp.middleware.response_transformer')
+            ->replaceArgument(0, $responseTransformer);
     }
 
     private function configureConsoleCommands(ContainerBuilder $container, array $config)

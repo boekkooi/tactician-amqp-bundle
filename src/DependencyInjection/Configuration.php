@@ -201,6 +201,7 @@ class Configuration implements ConfigurationInterface
                 ->end()
                 ->scalarNode('envelope_transformer')->defaultValue('boekkooi.amqp.tactician.envelope_transformer')->end()
                 ->scalarNode('command_transformer')->defaultValue('boekkooi.amqp.tactician.command_transformer')->end()
+                ->scalarNode('response_transformer')->defaultValue('boekkooi.amqp.tactician.response_transformer')->end()
                 ->scalarNode('serializer')->defaultValue('boekkooi.amqp.tactician.serializer')->end()
                 ->scalarNode('serializer_format')->defaultValue('json')->end()
             ->end();
