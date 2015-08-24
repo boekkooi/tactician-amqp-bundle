@@ -1,6 +1,7 @@
 <?php
 namespace Tests\Boekkooi\Bundle\AMQP\DependencyInjection;
 
+use Boekkooi\Bundle\AMQP\CommandConfiguration;
 use Boekkooi\Bundle\AMQP\DependencyInjection\BoekkooiAMQPExtension;
 use Boekkooi\Bundle\AMQP\Exception\InvalidConfigurationException;
 use Matthias\SymfonyDependencyInjectionTest\PhpUnit\AbstractExtensionTestCase;
@@ -9,7 +10,6 @@ use Symfony\Component\DependencyInjection\Reference;
 
 class BoekkooiAMQPExtensionTest extends AbstractExtensionTestCase
 {
-
     /**
      * {@inheritdoc}
      */
@@ -31,16 +31,18 @@ class BoekkooiAMQPExtensionTest extends AbstractExtensionTestCase
         $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.tactician.exchange_locator', 0, new Reference('service_container'));
 
         $this->assertContainerBuilderHasService('boekkooi.amqp.tactician.serializer');
-        $this->assertContainerBuilderHasService('boekkooi.amqp.tactician.transformer');
-        $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.tactician.transformer', 0, new Reference('boekkooi.amqp.tactician.serializer'));
+        $this->assertContainerBuilderHasService('boekkooi.amqp.tactician.envelope_transformer');
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.tactician.envelope_transformer', 0, new Reference('boekkooi.amqp.tactician.serializer'));
+        $this->assertContainerBuilderHasService('boekkooi.amqp.tactician.command_transformer');
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.tactician.command_transformer', 0, new Reference('boekkooi.amqp.tactician.serializer'));
 
         $this->assertContainerBuilderHasService('boekkooi.amqp.middleware.publish');
         $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.middleware.publish', 0, new Reference('boekkooi.amqp.tactician.publisher'));
         $this->assertContainerBuilderHasService('boekkooi.amqp.middleware.consume');
         $this->assertContainerBuilderHasService('boekkooi.amqp.middleware.command_transformer');
-        $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.middleware.command_transformer', 0, new Reference('boekkooi.amqp.tactician.transformer'));
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.middleware.command_transformer', 0, new Reference('boekkooi.amqp.tactician.command_transformer'));
         $this->assertContainerBuilderHasService('boekkooi.amqp.middleware.envelope_transformer');
-        $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.middleware.envelope_transformer', 0, new Reference('boekkooi.amqp.tactician.transformer'));
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.middleware.envelope_transformer', 0, new Reference('boekkooi.amqp.tactician.envelope_transformer'));
 
         $this->assertContainerBuilderHasService('boekkooi.amqp.consume_command_bus');
     }
@@ -158,20 +160,14 @@ class BoekkooiAMQPExtensionTest extends AbstractExtensionTestCase
         $queueListId = sprintf(BoekkooiAMQPExtension::PARAMETER_VHOST_QUEUE_LIST, 'root');
         $this->assertContainerBuilderHasParameter($queueListId, ['test', 'test2']);
 
-        $transformerId = 'boekkooi.amqp.tactician.transformer';
-        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($transformerId, 'addCommands', [[
-            'my\\Command' => [
-                'vhost' => 'root',
-                'exchange' => 'my_exchange',
-                'routing_key' => null,
-                'flags' => AMQP_MANDATORY,
-                'attributes' => []
-            ]
-        ]]);
+        $transformerId = 'boekkooi.amqp.tactician.command_transformer';
+        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($transformerId, 'registerCommand', [
+            new CommandConfiguration('my\\Command', 'root', 'my_exchange', null, AMQP_MANDATORY, [])
+        ]);
 
         $transformerMiddlewareId = 'boekkooi.amqp.middleware.command_transformer';
-        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($transformerMiddlewareId, 'addSupportedCommands', [
-            [ 'my\\Command' ]
+        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($transformerMiddlewareId, 'addSupportedCommand', [
+            'my\\Command'
         ]);
     }
 

@@ -1,6 +1,7 @@
 <?php
 namespace Boekkooi\Bundle\AMQP\DependencyInjection;
 
+use Boekkooi\Bundle\AMQP\CommandConfiguration;
 use Boekkooi\Bundle\AMQP\Consumer\Consumer;
 use Boekkooi\Bundle\AMQP\Exception\InvalidConfigurationException;
 use Boekkooi\Bundle\AMQP\LazyChannel;
@@ -45,6 +46,7 @@ class BoekkooiAMQPExtension extends Extension
 
         $loader->load('tactician.yml');
         $this->configureCommands($container, $config);
+        $this->configureTransformers($container, $config);
         $this->configureMiddleware($container, $config);
 
         $this->configureConsoleCommands($container, $config);
@@ -165,61 +167,77 @@ class BoekkooiAMQPExtension extends Extension
 
     private function configureCommands(ContainerBuilder $container, array $config)
     {
+        $transformerDef = $container->getDefinition('boekkooi.amqp.tactician.command_transformer');
+        $middlewareDef = $container->getDefinition('boekkooi.amqp.middleware.command_transformer');
+
         $commands = [];
         foreach ($config['commands'] as $class => $info) {
-            if (!$container->hasDefinition(sprintf(self::SERVICE_VHOST_CONNECTION_ID, $info['vhost']))) {
-                throw InvalidConfigurationException::unknownVHostForCommand($class, $info['vhost']);
-            }
-            if (!$container->hasDefinition(sprintf(self::SERVICE_VHOST_EXCHANGE_ID, $info['vhost'], $info['exchange']))) {
-                throw InvalidConfigurationException::unknownExchangeForCommand($class, $info['vhost'], $info['exchange']);
-            }
+            $command = $this->configureCommand($container, $class, $info);
+            $commands[$command->getClass()] = $config;
 
-            $class = ltrim($class, '\\');
-            $commands[$class] = $this->retrieveCommandInformation($info);
+            $transformerDef->addMethodCall('registerCommand', [ $command ]);
+            $middlewareDef->addMethodCall('addSupportedCommand', [ $command->getClass() ]);
         }
-
-        $def = $container->getDefinition('boekkooi.amqp.tactician.transformer');
-        $def->addMethodCall('addCommands', [$commands]);
-
-        $def = $container->getDefinition('boekkooi.amqp.middleware.command_transformer');
-        $def->addMethodCall('addSupportedCommands', [array_keys($commands)]);
     }
 
-    private function retrieveCommandInformation(array $info)
+    private function configureCommand(ContainerBuilder $container, $class, array $info)
     {
-        return [
-            'vhost' => $info['vhost'],
-            'exchange' => $info['exchange'],
-            'routing_key' => (isset($info['routing_key']) ? $info['routing_key'] : null),
-            'flags' => (
+        $commandConfig = new CommandConfiguration(
+            $class,
+            $info['vhost'],
+            $info['exchange'],
+            (isset($info['routing_key']) ? $info['routing_key'] : null),
+            (
                 (isset($info['mandatory']) && $info['mandatory'] ? AMQP_MANDATORY : AMQP_NOPARAM) |
                 (isset($info['immediate']) && $info['immediate'] ? AMQP_IMMEDIATE : AMQP_NOPARAM)
             ),
-            'attributes' => (isset($info['attributes']) ? $info['attributes'] : [])
-        ];
+            (isset($info['attributes']) ? $info['attributes'] : [])
+        );
+
+        if (!$container->hasDefinition(sprintf(self::SERVICE_VHOST_CONNECTION_ID, $commandConfig->getVhost()))) {
+            throw InvalidConfigurationException::unknownVHostForCommand(
+                $commandConfig->getClass(),
+                $commandConfig->getVhost()
+            );
+        }
+        if (!$container->hasDefinition(sprintf(self::SERVICE_VHOST_EXCHANGE_ID, $commandConfig->getVhost(), $commandConfig->getExchange()))) {
+            throw InvalidConfigurationException::unknownExchangeForCommand(
+                $commandConfig->getClass(),
+                $commandConfig->getVhost(),
+                $commandConfig->getExchange()
+            );
+        }
+
+        return $commandConfig;
     }
 
-    private function configureMiddleware(ContainerBuilder $container, array $config)
+    private function configureTransformers(ContainerBuilder $container, array $config)
     {
-        $commandTransformer = new Reference($config['envelope_transformer']);
-        $container
-            ->getDefinition('boekkooi.amqp.middleware.envelope_transformer')
-            ->replaceArgument(0, $commandTransformer);
-
-        $commandTransformer = new Reference($config['command_transformer']);
-        $container
-            ->getDefinition('boekkooi.amqp.middleware.command_transformer')
-            ->replaceArgument(0, $commandTransformer);
-
-        $commandSerializer = new Reference($config['serializer']);
-        $container
-            ->getDefinition('boekkooi.amqp.tactician.transformer')
-            ->replaceArgument(0, $commandSerializer);
         $container
             ->setParameter(
                 'boekkooi.amqp.tactician.serializer.format',
                 $config['serializer_format']
             );
+
+        $commandSerializer = new Reference($config['serializer']);
+        foreach (['command_transformer' , 'envelope_transformer'] as $transformer) {
+            $container
+                ->getDefinition('boekkooi.amqp.tactician.' . $transformer)
+                ->replaceArgument(0, $commandSerializer);
+        }
+    }
+
+    private function configureMiddleware(ContainerBuilder $container, array $config)
+    {
+        $envelopeTransformer = new Reference($config['envelope_transformer']);
+        $container
+            ->getDefinition('boekkooi.amqp.middleware.envelope_transformer')
+            ->replaceArgument(0, $envelopeTransformer);
+
+        $commandTransformer = new Reference($config['command_transformer']);
+        $container
+            ->getDefinition('boekkooi.amqp.middleware.command_transformer')
+            ->replaceArgument(0, $commandTransformer);
     }
 
     private function configureConsoleCommands(ContainerBuilder $container, array $config)

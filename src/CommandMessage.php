@@ -3,7 +3,7 @@ namespace Boekkooi\Bundle\AMQP;
 
 use Boekkooi\Tactician\AMQP\AMQPAwareMessage;
 
-class AMQPMessage implements AMQPAwareMessage
+class CommandMessage implements AMQPAwareMessage
 {
     private $message;
     private $routingKey;
@@ -29,7 +29,7 @@ class AMQPMessage implements AMQPAwareMessage
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getMessage()
     {
@@ -37,7 +37,7 @@ class AMQPMessage implements AMQPAwareMessage
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getRoutingKey()
     {
@@ -45,7 +45,7 @@ class AMQPMessage implements AMQPAwareMessage
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getFlags()
     {
@@ -53,7 +53,7 @@ class AMQPMessage implements AMQPAwareMessage
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getAttributes()
     {
@@ -61,7 +61,7 @@ class AMQPMessage implements AMQPAwareMessage
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getVHost()
     {
@@ -69,7 +69,7 @@ class AMQPMessage implements AMQPAwareMessage
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getExchange()
     {

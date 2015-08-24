@@ -5,7 +5,8 @@ parameters:
   boekkooi.amqp.tactician.serializer.class: Boekkooi\Bundle\AMQP\Transformer\Serializer\SimpleSerializer
   boekkooi.amqp.tactician.serializer.format: 'json'
 
-  boekkooi.amqp.tactician.transformer.class: Boekkooi\Bundle\AMQP\Transformer\SerializerTransformer
+  boekkooi.amqp.tactician.command_transformer.class: Boekkooi\Bundle\AMQP\Transformer\CommandTransformer
+  boekkooi.amqp.tactician.envelope_transformer.class: Boekkooi\Bundle\AMQP\Transformer\EnvelopeTransformer
 
   boekkooi.amqp.middleware.publish.class: Boekkooi\Tactician\AMQP\Middleware\PublishMiddleware
   boekkooi.amqp.middleware.consume.class: Boekkooi\Tactician\AMQP\Middleware\ConsumeMiddleware
@@ -28,8 +29,14 @@ services:
   boekkooi.amqp.tactician.serializer:
     class: %boekkooi.amqp.tactician.serializer.class%
 
-  boekkooi.amqp.tactician.transformer:
-    class: %boekkooi.amqp.tactician.transformer.class%
+  boekkooi.amqp.tactician.command_transformer:
+    class: %boekkooi.amqp.tactician.command_transformer.class%
+    arguments:
+      - @boekkooi.amqp.tactician.serializer
+      - %boekkooi.amqp.tactician.serializer.format%
+
+  boekkooi.amqp.tactician.envelope_transformer:
+    class: %boekkooi.amqp.tactician.envelope_transformer.class%
     arguments:
       - @boekkooi.amqp.tactician.serializer
       - %boekkooi.amqp.tactician.serializer.format%
@@ -46,10 +53,10 @@ services:
   boekkooi.amqp.middleware.command_transformer:
     class: %boekkooi.amqp.middleware.command_transformer.class%
     arguments:
-      - @boekkooi.amqp.tactician.transformer
+      - @boekkooi.amqp.tactician.command_transformer
       - []
 
   boekkooi.amqp.middleware.envelope_transformer:
     class: %boekkooi.amqp.middleware.envelope_transformer.class%
     arguments:
-      - @boekkooi.amqp.tactician.transformer
+      - @boekkooi.amqp.tactician.envelope_transformer

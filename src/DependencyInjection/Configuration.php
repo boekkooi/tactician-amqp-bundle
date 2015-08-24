@@ -199,8 +199,8 @@ class Configuration implements ConfigurationInterface
                     ->info('The tactician command bus to use for queue consumption')
                     ->defaultValue('tactician.commandbus')
                 ->end()
-                ->scalarNode('envelope_transformer')->defaultValue('boekkooi.amqp.tactician.transformer')->end()
-                ->scalarNode('command_transformer')->defaultValue('boekkooi.amqp.tactician.transformer')->end()
+                ->scalarNode('envelope_transformer')->defaultValue('boekkooi.amqp.tactician.envelope_transformer')->end()
+                ->scalarNode('command_transformer')->defaultValue('boekkooi.amqp.tactician.command_transformer')->end()
                 ->scalarNode('serializer')->defaultValue('boekkooi.amqp.tactician.serializer')->end()
                 ->scalarNode('serializer_format')->defaultValue('json')->end()
             ->end();
