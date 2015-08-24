@@ -2,9 +2,8 @@
 [![Latest Version](https://img.shields.io/github/release/boekkooi/tactician-amqp-bundle.svg?style=flat-square)](https://github.com/boekkooi/tactician-amqp-bundle/releases)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
 [![Build Status](https://img.shields.io/travis/boekkooi/tactician-amqp-bundle/master.svg?style=flat-square)](https://travis-ci.org/boekkooi/tactician-amqp-bundle)
-[![Coverage Status](https://img.shields.io/scrutinizer/coverage/g/boekkooi/tactician-amqp-bundle.svg?style=flat-square)](https://scrutinizer-ci.com/g/boekkooi/tactician-amqp-bundle/code-structure)
-[![Quality Score](https://img.shields.io/scrutinizer/g/boekkooi/tactician-amqp-bundle.svg?style=flat-square)](https://scrutinizer-ci.com/g/boekkooi/tactician-amqp-bundle)
 [![Total Downloads](https://img.shields.io/packagist/dt/boekkooi/amqp-bundle.svg?style=flat-square)](https://packagist.org/packages/boekkooi/amqp-bundle)
+[![SensioLabsInsight](https://insight.sensiolabs.com/projects/2fc45ca5-0919-4b15-a372-37a49841b521/mini.png)](https://insight.sensiolabs.com/projects/2fc45ca5-0919-4b15-a372-37a49841b521)
 
 Symfony2 Bundle extending for the [Tactician bundle](https://github.com/thephpleague/tactician-bundle) with AMQP powers.
 
