@@ -11,9 +11,9 @@ parameters:
 
   boekkooi.amqp.middleware.publish.class: Boekkooi\Tactician\AMQP\Middleware\PublishMiddleware
   boekkooi.amqp.middleware.consume.class: Boekkooi\Tactician\AMQP\Middleware\ConsumeMiddleware
+  boekkooi.amqp.middleware.rpc.class: Boekkooi\Tactician\AMQP\Middleware\RPCMiddleware
   boekkooi.amqp.middleware.command_transformer.class: Boekkooi\Tactician\AMQP\Middleware\CommandTransformerMiddleware
   boekkooi.amqp.middleware.envelope_transformer.class: Boekkooi\Tactician\AMQP\Middleware\EnvelopeTransformerMiddleware
-  boekkooi.amqp.middleware.response_transformer.class: Boekkooi\Tactician\AMQP\Middleware\RPCMiddleware
 
 services:
   ## Publishing related ##
@@ -58,6 +58,11 @@ services:
   boekkooi.amqp.middleware.consume:
     class: %boekkooi.amqp.middleware.consume.class%
 
+  boekkooi.amqp.middleware.rpc:
+    class: %boekkooi.amqp.middleware.rpc.class%
+    arguments:
+      - @boekkooi.amqp.tactician.response_transformer
+
   boekkooi.amqp.middleware.command_transformer:
     class: %boekkooi.amqp.middleware.command_transformer.class%
     arguments:
@@ -68,8 +73,3 @@ services:
     class: %boekkooi.amqp.middleware.envelope_transformer.class%
     arguments:
       - @boekkooi.amqp.tactician.envelope_transformer
-
-  boekkooi.amqp.middleware.response_transformer:
-    class: %boekkooi.amqp.middleware.response_transformer.class%
-    arguments:
-      - @boekkooi.amqp.tactician.response_transformer

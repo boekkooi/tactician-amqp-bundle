@@ -244,7 +244,7 @@ class BoekkooiAMQPExtension extends Extension
 
         $responseTransformer = new Reference($config['response_transformer']);
         $container
-            ->getDefinition('boekkooi.amqp.middleware.response_transformer')
+            ->getDefinition('boekkooi.amqp.middleware.rpc')
             ->replaceArgument(0, $responseTransformer);
     }
 
