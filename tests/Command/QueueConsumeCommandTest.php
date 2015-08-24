@@ -2,6 +2,7 @@
 namespace Tests\Boekkooi\Bundle\AMQP\Command;
 
 use Boekkooi\Bundle\AMQP\Command\QueueConsumeCommand;
+use Boekkooi\Bundle\AMQP\Consumer\Consumer;
 use Boekkooi\Bundle\AMQP\DependencyInjection\BoekkooiAMQPExtension;
 use Boekkooi\Tactician\AMQP\AMQPCommand;
 use League\Tactician\CommandBus;
@@ -53,22 +54,23 @@ class QueueConsumeCommandTest extends \PHPUnit_Framework_TestCase
      */
     public function it_should_process_a_single_queue()
     {
-        $queue = $this->mockQueueWithConsume();
-
         $this->commandBus
             ->shouldReceive('handle')
             ->with(Mockery::type(AMQPCommand::class))
             ->times(5);
 
+        $consumer = $this->mockConsumerWithConsume(['my_queue']);
+
         $this->container
             ->shouldReceive('get')
-            ->with(sprintf(BoekkooiAMQPExtension::SERVICE_VHOST_QUEUE_ID, '/', 'my_queue'))
-            ->andReturn($queue);
+            ->atLeast()->once()
+            ->with(sprintf(BoekkooiAMQPExtension::SERVICE_VHOST_CONSUMER_ID, 'main'))
+            ->andReturn($consumer);
 
         $statusCode = $this->commandTester->execute(
             array(
                 '--amount' => 5,
-                'vhost'    => '/',
+                'vhost'    => 'main',
                 'queues'   => 'my_queue',
             )
         );
@@ -83,17 +85,13 @@ class QueueConsumeCommandTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException(ServiceNotFoundException::class);
 
-        $queue = Mockery::mock(\AMQPQueue::class);
-        $queue
-            ->shouldNotReceive('consume')
-            ->withAnyArgs();
-
         $this->commandBus
-            ->shouldNotReceive('handle')->withAnyArgs();
+            ->shouldNotReceive('handle')
+            ->withAnyArgs();
 
         $this->container
             ->shouldReceive('get')
-            ->with(sprintf(BoekkooiAMQPExtension::SERVICE_VHOST_QUEUE_ID, '/', 'unknown'))
+            ->with(sprintf(BoekkooiAMQPExtension::SERVICE_VHOST_CONSUMER_ID, '/', 'unknown'))
             ->andThrow(ServiceNotFoundException::class);
 
         $this->commandTester->execute(
@@ -105,6 +103,7 @@ class QueueConsumeCommandTest extends \PHPUnit_Framework_TestCase
 
         $this->assertSame(1, $this->commandTester->getStatusCode());
     }
+
     /**
      *
      * @test
@@ -113,7 +112,7 @@ class QueueConsumeCommandTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException(\RuntimeException::class);
 
-        $queue = $this->mockQueueWithConsume();
+        $consumer = $this->mockConsumerWithConsume(['queue']);
 
         $this->commandBus
             ->shouldReceive('handle')
@@ -122,8 +121,8 @@ class QueueConsumeCommandTest extends \PHPUnit_Framework_TestCase
 
         $this->container
             ->shouldReceive('get')
-            ->with(sprintf(BoekkooiAMQPExtension::SERVICE_VHOST_QUEUE_ID, '/', 'queue'))
-            ->andReturn($queue);
+            ->with(sprintf(BoekkooiAMQPExtension::SERVICE_VHOST_CONSUMER_ID, '/', 'queue'))
+            ->andReturn($consumer);
 
         $this->commandTester->execute(
             array(
@@ -138,21 +137,22 @@ class QueueConsumeCommandTest extends \PHPUnit_Framework_TestCase
     /**
      * @return Mockery\MockInterface
      */
-    private function mockQueueWithConsume()
+    protected function mockConsumerWithConsume($expectedQueues)
     {
-        $queue = Mockery::mock(\AMQPQueue::class);
-        $queue
+        $consumer = Mockery::mock(Consumer::class);
+        $consumer
             ->shouldReceive('consume')
+            ->once()
             ->andReturnUsing(
-                function (callable $callback) {
+                function ($queues, callable $callback) use ($expectedQueues) {
+                    \PHPUnit_Framework_Assert::assertEquals($expectedQueues, $queues);
+
                     do {
                         $envelope = Mockery::mock(\AMQPEnvelope::class);
                         $queue = Mockery::mock(\AMQPQueue::class);
                     } while (($callback($envelope, $queue)));
                 }
             );
-        $queue
-            ->shouldReceive('cancel');
-        return $queue;
+        return $consumer;
     }
 }

@@ -3,6 +3,9 @@ namespace Tests\Boekkooi\Bundle\AMQP\Publisher\Locator;
 
 use Boekkooi\Bundle\AMQP\DependencyInjection\BoekkooiAMQPExtension;
 use Boekkooi\Bundle\AMQP\Exception\MissingExchangeException;
+use Boekkooi\Bundle\AMQP\LazyChannel;
+use Boekkooi\Bundle\AMQP\LazyConnection;
+use Boekkooi\Bundle\AMQP\LazyExchange;
 use Boekkooi\Bundle\AMQP\Publisher\Locator\ContainerLocator;
 use Boekkooi\Tactician\AMQP\AMQPAwareMessage;
 use Boekkooi\Tactician\AMQP\Message;
@@ -34,14 +37,60 @@ class ContainerLocatorTest extends \PHPUnit_Framework_TestCase
     {
         $message = $this->mockMessage();
 
-        $exchangeServiceId = sprintf(BoekkooiAMQPExtension::SERVICE_VHOST_EXCHANGE_ID, '/', 'ex');
-        $exchange = Mockery::mock(\AMQPExchange::class);
+        // Connection
+        $amqpConnection = Mockery::mock(\AMQPConnection::class);
+        $connection = Mockery::mock(LazyConnection::class);
+        $connection
+            ->shouldReceive('instance')
+            ->atLeast()->once()
+            ->andReturn($amqpConnection);
 
-        $this->container->shouldReceive('has')->with($exchangeServiceId)->andReturn(true);
-        $this->container->shouldReceive('get')->with($exchangeServiceId)->andReturn($exchange);
+        $connectionServiceId = sprintf(BoekkooiAMQPExtension::SERVICE_VHOST_CONNECTION_ID, 'main');
+        $this->container
+            ->shouldReceive('get')
+            ->atLeast()->once()
+            ->with($connectionServiceId)
+            ->andReturn($connection);
+
+        // Channel
+        $amqpChannel = Mockery::mock(\AMQPChannel::class);
+        $channel = Mockery::mock(LazyChannel::class);
+        $channel
+            ->shouldReceive('create')
+            ->atLeast()->once()
+            ->with($amqpConnection)
+            ->andReturn($amqpChannel);
+
+        $channelServiceId = sprintf(BoekkooiAMQPExtension::SERVICE_VHOST_CHANNEL_ID, 'main');
+        $this->container
+            ->shouldReceive('get')
+            ->atLeast()->once()
+            ->with($channelServiceId)
+            ->andReturn($channel);
+
+        // Exchange
+        $amqpExchange = Mockery::mock(\AMQPChannel::class);
+        $exchange = Mockery::mock(LazyExchange::class);
+        $exchange
+            ->shouldReceive('create')
+            ->atLeast()->once()
+            ->with($amqpChannel)
+            ->andReturn($amqpExchange);
+
+        $exchangeServiceId = sprintf(BoekkooiAMQPExtension::SERVICE_VHOST_EXCHANGE_ID, 'main', 'ex');
+        $this->container
+            ->shouldReceive('has')
+            ->atLeast()->once()
+            ->with($exchangeServiceId)
+            ->andReturn(true);
+        $this->container
+            ->shouldReceive('get')
+            ->atLeast()->once()
+            ->with($exchangeServiceId)
+            ->andReturn($exchange);
 
         $this->assertSame(
-            $exchange,
+            $amqpExchange,
             $this->locator->getExchangeForMessage($message)
         );
     }
@@ -80,7 +129,7 @@ class ContainerLocatorTest extends \PHPUnit_Framework_TestCase
      * @param string $exchange
      * @return AMQPAwareMessage|Mockery\MockInterface
      */
-    private function mockMessage($vhost = '/', $exchange = 'ex')
+    private function mockMessage($vhost = 'main', $exchange = 'ex')
     {
         $message = Mockery::mock(AMQPAwareMessage::class);
         $message->shouldReceive('getVHost')->andReturn($vhost);

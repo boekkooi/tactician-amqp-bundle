@@ -92,46 +92,71 @@ class BoekkooiAMQPExtensionTest extends AbstractExtensionTestCase
             ]
         ]);
 
-        $connectionId = sprintf(BoekkooiAMQPExtension::SERVICE_CONNECTION_ID, 'default');
+        $connectionId = sprintf(BoekkooiAMQPExtension::SERVICE_VHOST_CONNECTION_ID, 'root');
         $this->assertContainerBuilderHasService($connectionId);
-        $this->assertContainerBuilderHasServiceDefinitionWithArgument($connectionId, 0, [
-            'host' => 'localhost',
-            'port' => 5672,
-            'read_timeout' => 10,
-            'write_timeout' => 10,
-            'connect_timeout' => 10,
-            'login' => 'guest',
-            'password' => 'guest'
-        ]);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument($connectionId, 0, 'localhost');
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument($connectionId, 1, 5672);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument($connectionId, 2, '/');
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument($connectionId, 3, 'guest');
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument($connectionId, 4, 'guest');
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument($connectionId, 5, 10);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument($connectionId, 6, 10);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument($connectionId, 7, 10);
+
+        $vhostListId = BoekkooiAMQPExtension::PARAMETER_VHOST_LIST;
+        $this->assertContainerBuilderHasParameter($vhostListId, ['root']);
 
         $exchangeId = sprintf(BoekkooiAMQPExtension::SERVICE_VHOST_EXCHANGE_ID, 'root', 'my_exchange');
         $this->assertContainerBuilderHasService($exchangeId);
-        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($exchangeId, 'setName', [ 'my_exchange' ]);
-        $this->assertContainerBuilderHasServiceDefinitionWithoutMethodCall($exchangeId, 'setArguments', [ [] ]);
-        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($exchangeId, 'setType', [ AMQP_EX_TYPE_DIRECT ]);
-        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($exchangeId, 'setFlags', [ AMQP_DURABLE ]);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument($exchangeId, 0, 'my_exchange');
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument($exchangeId, 1, AMQP_EX_TYPE_DIRECT);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument($exchangeId, 2, false);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument($exchangeId, 3, true);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument($exchangeId, 4, []);
 
         $exchangeId = sprintf(BoekkooiAMQPExtension::SERVICE_VHOST_EXCHANGE_ID, 'root', 'second_exchange');
         $this->assertContainerBuilderHasService($exchangeId);
-        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($exchangeId, 'setName', [ 'second_exchange' ]);
-        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($exchangeId, 'setArguments', [ ['key' => 'val'] ]);
-        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($exchangeId, 'setType', [ AMQP_EX_TYPE_FANOUT ]);
-        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($exchangeId, 'setFlags', [ AMQP_PASSIVE ]);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument($exchangeId, 0, 'second_exchange');
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument($exchangeId, 1, AMQP_EX_TYPE_FANOUT);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument($exchangeId, 2, true);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument($exchangeId, 3, false);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument($exchangeId, 4, ['key' => 'val']);
+
+        $exchangeListId = sprintf(BoekkooiAMQPExtension::PARAMETER_VHOST_EXCHANGE_LIST, 'root');
+        $this->assertContainerBuilderHasParameter($exchangeListId, ['my_exchange', 'second_exchange']);
 
         $queueId = sprintf(BoekkooiAMQPExtension::SERVICE_VHOST_QUEUE_ID, 'root', 'test');
         $this->assertContainerBuilderHasService($queueId);
-        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($queueId, 'setName', [ 'test' ]);
-        $this->assertContainerBuilderHasServiceDefinitionWithoutMethodCall($queueId, 'setArguments', [ [] ]);
-        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($queueId, 'setFlags', [ AMQP_DURABLE ]);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument($queueId, 0, 'test');
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument($queueId, 1, false);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument($queueId, 2, true);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument($queueId, 3, false);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument($queueId, 4, false);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument($queueId, 5, []);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument($queueId, 6, [
+            'my_exchange' => [
+                'routing_key' => null,
+                'arguments' => []
+            ]
+        ]);
 
         $queueId = sprintf(BoekkooiAMQPExtension::SERVICE_VHOST_QUEUE_ID, 'root', 'test2');
         $this->assertContainerBuilderHasService($queueId);
-        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($queueId, 'setName', [ 'test2' ]);
-        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($queueId, 'setArguments', [ ['key' => 'val'] ]);
-        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($queueId, 'setFlags', [ AMQP_NOPARAM ]);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument($queueId, 0, 'test2');
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument($queueId, 1, false);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument($queueId, 2, false);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument($queueId, 3, false);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument($queueId, 4, false);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument($queueId, 5, ['key' => 'val']);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument($queueId, 6, [
+            'second_exchange' => [
+                'routing_key' => null,
+                'arguments' => []
+            ]
+        ]);
 
-        $queueBindsId = sprintf(BoekkooiAMQPExtension::PARAMETER_VHOST_QUEUE_BINDS, 'root', 'test');
-        $this->assertContainerBuilderHasParameter($queueBindsId, ['my_exchange' => [ 'routing_key' => null, 'arguments' => [] ]]);
+        $queueListId = sprintf(BoekkooiAMQPExtension::PARAMETER_VHOST_QUEUE_LIST, 'root');
+        $this->assertContainerBuilderHasParameter($queueListId, ['test', 'test2']);
 
         $transformerId = 'boekkooi.amqp.tactician.transformer';
         $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($transformerId, 'addCommands', [[

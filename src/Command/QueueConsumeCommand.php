@@ -32,22 +32,14 @@ class QueueConsumeCommand extends ContainerAwareCommand
         if (strval(intval($amount)) !== strval($amount) || intval($amount) <= 0) {
             throw new \InvalidArgumentException('An option "amount" must be a positive integer.');
         }
+
         $limit = intval($amount);
 
-        $queues = $this->getQueues($input->getArgument('vhost'), (array)$input->getArgument('queues'));
-
-        /** @var \AMQPQueue $consumeQueue */
-        $consumeQueue = array_pop($queues);
-
-        # In case of multiple queues we bind without any arguments
-        # This allows multiple to be consumed by one callback
-        foreach ($queues as $queue) {
-            $queue->consume();
-        }
-
-        # The last queue is bound to the callback
         $commandBus = $this->getCommandBus();
-        $consumeQueue->consume(
+
+        $consumer = $this->getConsumer($input->getArgument('vhost'));
+        $consumer->consume(
+            (array)$input->getArgument('queues'),
             function (\AMQPEnvelope $envelope, \AMQPQueue $queue) use ($commandBus, &$limit) {
                 $commandBus->handle(new AMQPCommand($envelope, $queue));
 
@@ -55,31 +47,18 @@ class QueueConsumeCommand extends ContainerAwareCommand
                 return $limit > 0;
             }
         );
-
-        # Cancel consumption of the queue
-        $consumeQueue->cancel();
-        foreach ($queues as $queue) {
-            $queue->cancel();
-        }
     }
 
     /**
      * @param string $vhost
-     * @param array $names
-     * @return \AMQPQueue[]
+     * @return \Boekkooi\Bundle\AMQP\Consumer\Consumer
      */
-    private function getQueues($vhost, array $names)
+    private function getConsumer($vhost)
     {
-        $queues = [];
-        foreach ($names as $name) {
-            $queues[] = $this->getContainer()->get(sprintf(
-                BoekkooiAMQPExtension::SERVICE_VHOST_QUEUE_ID,
-                $vhost,
-                $name
-            ));
-        }
-
-        return $queues;
+        return $this->getContainer()->get(sprintf(
+            BoekkooiAMQPExtension::SERVICE_VHOST_CONSUMER_ID,
+            $vhost
+        ));
     }
 
     /**

@@ -1,27 +1,11 @@
+parameters:
+  boekkooi.amqp.consumer.queue_locator.class: Boekkooi\Bundle\AMQP\Consumer\Locator\ContainerLocator
+
 services:
-  # Abstract service definitions
-  boekkooi.amqp.abstract.vhost_connection:
-    class: AMQPConnection
-    arguments: [ [] ]
-    abstract: true
-    public: false
-
-  boekkooi.amqp.abstract.channel:
-    class: AMQPChannel
-    arguments: [ @boekkooi.amqp.abstract.vhost_connection ]
-    abstract: true
-    public: false
-
-  ## Queues are only used by the publishers
-  boekkooi.amqp.abstract.exchange:
-    class: AMQPExchange
-    arguments: [ @boekkooi.amqp.abstract.channel ]
-    abstract: true
-    public: false
-
-  ## Queues are only used by handlers
-  boekkooi.amqp.abstract.queue:
-    class: AMQPQueue
-    arguments: [ @boekkooi.amqp.abstract.channel ]
+  ## Consumtion related ##
+  boekkooi.amqp.abstract.consumer.queue_locator:
+    class: %boekkooi.amqp.consumer.queue_locator.class%
+    arguments:
+      - @service_container
     abstract: true
     public: false
