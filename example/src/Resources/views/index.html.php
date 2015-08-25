@@ -11,8 +11,18 @@
             <input type="text" name="name" id="direct-name">
         </div>
         <div>
-            <input type="submit" name="Submit To direct exchange">
+            <input type="submit" name="direct" value="Submit To direct">
+            <input type="submit" name="rpc" value="Submit To rpc">
         </div>
     </form>
+
+    <?php if ($result !== null) { ?>
+    <p>
+        <h1>Result</h1>
+        <pre>
+            <?php var_dump($result); ?>
+        </pre>
+    </p>
+    <?php } ?>
 </body>
 </html>

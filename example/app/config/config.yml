@@ -14,6 +14,8 @@ framework:
 
 
 boekkooi_amqp:
+  command_bus: tactician.commandbus.consume
+
   connections:
     default:
       timeout:
@@ -31,12 +33,21 @@ boekkooi_amqp:
           binds:
             'direct_exchange':
               routing_key: 'direct_command'
+        rpc_queue:
+          binds:
+            'direct_exchange':
+              routing_key: 'rpc_command'
 
   commands:
     'Example\Command\DirectCommand':
       vhost: main
       exchange: 'direct_exchange'
       routing_key: 'direct_command'
+    'Example\Command\RpcCommand':
+      rpc: true
+      vhost: main
+      exchange: 'direct_exchange'
+      routing_key: 'rpc_command'
 
 tactician:
   commandbus:
@@ -44,7 +55,11 @@ tactician:
       middleware:
         - boekkooi.amqp.middleware.command_transformer
         - boekkooi.amqp.middleware.publish
+        - tactician.middleware.command_handler
+    consume:
+      middleware:
         - boekkooi.amqp.middleware.consume
+        - boekkooi.amqp.middleware.remote_response
         - boekkooi.amqp.middleware.envelope_transformer
         - tactician.middleware.command_handler
 
@@ -53,3 +68,7 @@ services:
     class: Example\CommandHandler\DirectCommandHandler
     tags:
         - { name: tactician.handler, command: Example\Command\DirectCommand }
+  example.rpc_command_handler:
+    class: Example\CommandHandler\RpcCommandHandler
+    tags:
+        - { name: tactician.handler, command: Example\Command\RpcCommand }
