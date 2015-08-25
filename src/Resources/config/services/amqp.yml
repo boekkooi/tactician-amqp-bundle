@@ -1,5 +1,5 @@
 parameters:
-  boekkooi.amqp.consumer.queue_locator.class: Boekkooi\Bundle\AMQP\Consumer\Locator\ContainerLocator
+  boekkooi.amqp.consumer.queue_locator.class: Boekkooi\Bundle\AMQP\QueueLocator\ContainerLocator
 
 services:
   ## Consumtion related ##

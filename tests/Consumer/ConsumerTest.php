@@ -2,7 +2,7 @@
 namespace Tests\Boekkooi\Bundle\AMQP\Consumer;
 
 use Boekkooi\Bundle\AMQP\Consumer\Consumer;
-use Boekkooi\Bundle\AMQP\Consumer\Locator\QueueLocator;
+use Boekkooi\Bundle\AMQP\QueueLocator\QueueLocator;
 use Boekkooi\Bundle\AMQP\LazyChannel;
 use Boekkooi\Bundle\AMQP\LazyConnection;
 use Boekkooi\Bundle\AMQP\LazyQueue;
@@ -124,7 +124,7 @@ class ConsumerTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function it_should_not_cancel_queues_when_a_amqp_exception_occures()
+    public function it_should_not_cancel_queues_when_a_amqp_exception_occured()
     {
         $callback = function () use (&$callbackWasCalled) {
             throw new \AMQPException('some error');

@@ -3,7 +3,7 @@ namespace Boekkooi\Bundle\AMQP\Consumer;
 
 use Boekkooi\Bundle\AMQP\LazyChannel;
 use Boekkooi\Bundle\AMQP\LazyConnection;
-use Boekkooi\Bundle\AMQP\Consumer\Locator\QueueLocator;
+use Boekkooi\Bundle\AMQP\QueueLocator\QueueLocator;
 
 class Consumer
 {

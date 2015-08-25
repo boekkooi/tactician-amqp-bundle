@@ -1,5 +1,5 @@
 <?php
-namespace Boekkooi\Bundle\AMQP\Consumer\Locator;
+namespace Boekkooi\Bundle\AMQP\QueueLocator;
 
 use Boekkooi\Bundle\AMQP\LazyQueue;
 

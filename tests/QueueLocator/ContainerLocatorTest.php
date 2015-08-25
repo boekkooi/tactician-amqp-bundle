@@ -1,7 +1,7 @@
 <?php
-namespace Tests\Boekkooi\Bundle\AMQP\Consumer\Locator;
+namespace Tests\Boekkooi\Bundle\AMQP\QueueLocator;
 
-use Boekkooi\Bundle\AMQP\Consumer\Locator\ContainerLocator;
+use Boekkooi\Bundle\AMQP\QueueLocator\ContainerLocator;
 use Boekkooi\Bundle\AMQP\DependencyInjection\BoekkooiAMQPExtension;
 use Boekkooi\Bundle\AMQP\Exception\MissingQueueException;
 use Boekkooi\Bundle\AMQP\LazyQueue;
