@@ -63,7 +63,7 @@ class Consumer
             if ($connection->isConnected()) {
                 $connection->disconnect();
             }
-            $connection = null;
+            unset($connection);
         }
     }
 
