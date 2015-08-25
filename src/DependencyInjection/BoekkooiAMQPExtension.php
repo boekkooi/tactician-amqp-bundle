@@ -170,12 +170,36 @@ class BoekkooiAMQPExtension extends Extension
         $transformerDef = $container->getDefinition('boekkooi.amqp.tactician.command_transformer');
         $middlewareDef = $container->getDefinition('boekkooi.amqp.middleware.command_transformer');
 
+        $basicCommands = [];
+        $rpcCommands = [];
         foreach ($config['commands'] as $class => $info) {
             $commandReference = $this->configureCommand($container, $class, $info);
 
             $transformerDef->addMethodCall('registerCommand', [ $commandReference ]);
             $middlewareDef->addMethodCall('addSupportedCommand', [ $class ]);
+
+            if ($info['rpc'] === true) {
+                $rpcCommands[] = $class;
+            } else {
+                $basicCommands[] = $class;
+            }
         }
+
+        $publisherLocator = $container->getDefinition('boekkooi.amqp.tactician.publisher_locator');
+        $publisherLocator->addMethodCall(
+            'registerPublisher',
+            [
+                new Reference('boekkooi.amqp.tactician.publisher.basic'),
+                $basicCommands
+            ]
+        );
+        $publisherLocator->addMethodCall(
+            'registerPublisher',
+            [
+                new Reference('boekkooi.amqp.tactician.publisher.rpc'),
+                $rpcCommands
+            ]
+        );
     }
 
     private function configureCommand(ContainerBuilder $container, $class, array $info)
@@ -270,7 +294,7 @@ class BoekkooiAMQPExtension extends Extension
 
         $responseTransformer = new Reference($config['response_transformer']);
         $container
-            ->getDefinition('boekkooi.amqp.middleware.rpc')
+            ->getDefinition('boekkooi.amqp.middleware.remote_response')
             ->replaceArgument(0, $responseTransformer);
     }
 

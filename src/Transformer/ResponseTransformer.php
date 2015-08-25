@@ -32,7 +32,7 @@ class ResponseTransformer implements ResponseTransformerInterface
      * @param string $format The serialize format
      * @param string $responseHeaderName The name of the amqp header to identify the response
      */
-    public function __construct(SerializerInterface $serializer, $format, $responseHeaderName = 'x-symfony-response')
+    public function __construct(SerializerInterface $serializer, $format, $responseHeaderName = 'x-symfony-command')
     {
         $this->serializer = $serializer;
         $this->format = $format;

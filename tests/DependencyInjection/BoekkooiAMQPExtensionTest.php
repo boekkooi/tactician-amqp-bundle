@@ -27,10 +27,13 @@ class BoekkooiAMQPExtensionTest extends AbstractExtensionTestCase
         $this->load();
 
         $this->assertContainerBuilderHasService('boekkooi.amqp.tactician.exchange_locator');
-        $this->assertContainerBuilderHasService('boekkooi.amqp.tactician.publisher');
-        $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.tactician.publisher', 0, new Reference('boekkooi.amqp.tactician.exchange_locator'));
-        $this->assertContainerBuilderHasService('boekkooi.amqp.tactician.exchange_locator');
         $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.tactician.exchange_locator', 0, new Reference('service_container'));
+
+        $this->assertContainerBuilderHasService('boekkooi.amqp.tactician.publisher_locator');
+        $this->assertContainerBuilderHasService('boekkooi.amqp.tactician.publisher.basic');
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.tactician.publisher.basic', 0, new Reference('boekkooi.amqp.tactician.exchange_locator'));
+        $this->assertContainerBuilderHasService('boekkooi.amqp.tactician.publisher.rpc');
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.tactician.publisher.rpc', 0, new Reference('boekkooi.amqp.tactician.exchange_locator'));
 
         $this->assertContainerBuilderHasService('boekkooi.amqp.tactician.serializer');
         $this->assertContainerBuilderHasService('boekkooi.amqp.tactician.envelope_transformer');
@@ -44,10 +47,10 @@ class BoekkooiAMQPExtensionTest extends AbstractExtensionTestCase
         $this->assertContainerBuilderHasParameter('boekkooi.amqp.tactician.serializer.service', 'boekkooi.amqp.tactician.serializer');
 
         $this->assertContainerBuilderHasService('boekkooi.amqp.middleware.publish');
-        $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.middleware.publish', 0, new Reference('boekkooi.amqp.tactician.publisher'));
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.middleware.publish', 0, new Reference('boekkooi.amqp.tactician.publisher_locator'));
         $this->assertContainerBuilderHasService('boekkooi.amqp.middleware.consume');
-        $this->assertContainerBuilderHasService('boekkooi.amqp.middleware.rpc');
-        $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.middleware.rpc', 0, new Reference('boekkooi.amqp.tactician.response_transformer'));
+        $this->assertContainerBuilderHasService('boekkooi.amqp.middleware.remote_response');
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.middleware.remote_response', 0, new Reference('boekkooi.amqp.tactician.response_transformer'));
         $this->assertContainerBuilderHasService('boekkooi.amqp.middleware.command_transformer');
         $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.middleware.command_transformer', 0, new Reference('boekkooi.amqp.tactician.command_transformer'));
         $this->assertContainerBuilderHasService('boekkooi.amqp.middleware.envelope_transformer');
@@ -183,6 +186,8 @@ class BoekkooiAMQPExtensionTest extends AbstractExtensionTestCase
         $this->assertContainerBuilderHasServiceDefinitionWithMethodCall($transformerMiddlewareId, 'addSupportedCommand', [
             'my\\Command'
         ]);
+
+        //TODO check locator
 
         $this->assertContainerCanBeDumped();
     }

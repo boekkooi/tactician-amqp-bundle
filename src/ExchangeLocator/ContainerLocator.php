@@ -1,10 +1,10 @@
 <?php
-namespace Boekkooi\Bundle\AMQP\Publisher\Locator;
+namespace Boekkooi\Bundle\AMQP\ExchangeLocator;
 
 use Boekkooi\Bundle\AMQP\DependencyInjection\BoekkooiAMQPExtension;
 use Boekkooi\Bundle\AMQP\Exception\MissingExchangeException;
 use Boekkooi\Tactician\AMQP\Message;
-use Boekkooi\Tactician\AMQP\Publisher\Locator\ExchangeLocator;
+use Boekkooi\Tactician\AMQP\ExchangeLocator\ExchangeLocator;
 use Boekkooi\Tactician\AMQP\AMQPAwareMessage;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 

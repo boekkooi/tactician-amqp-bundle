@@ -1,12 +1,12 @@
 <?php
-namespace Tests\Boekkooi\Bundle\AMQP\Publisher\Locator;
+namespace Tests\Boekkooi\Bundle\AMQP\ExchangeLocator;
 
 use Boekkooi\Bundle\AMQP\DependencyInjection\BoekkooiAMQPExtension;
 use Boekkooi\Bundle\AMQP\Exception\MissingExchangeException;
 use Boekkooi\Bundle\AMQP\LazyChannel;
 use Boekkooi\Bundle\AMQP\LazyConnection;
 use Boekkooi\Bundle\AMQP\LazyExchange;
-use Boekkooi\Bundle\AMQP\Publisher\Locator\ContainerLocator;
+use Boekkooi\Bundle\AMQP\ExchangeLocator\ContainerLocator;
 use Boekkooi\Tactician\AMQP\AMQPAwareMessage;
 use Boekkooi\Tactician\AMQP\Message;
 use Mockery;
@@ -102,6 +102,7 @@ class ContainerLocatorTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException(MissingExchangeException::class);
 
+        /** @var Mockery\MockInterface|Message $message */
         $message = Mockery::mock(Message::class);
 
         $this->container->shouldNotReceive('has')->withAnyArgs();

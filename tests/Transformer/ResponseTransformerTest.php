@@ -3,9 +3,7 @@ namespace Tests\Boekkooi\Bundle\AMQP\Transformer;
 
 use Boekkooi\Bundle\AMQP\ResponseConfiguration;
 use Boekkooi\Bundle\AMQP\ResponseMessage;
-use Boekkooi\Bundle\AMQP\Exception\CommandTransformationException;
 use Boekkooi\Bundle\AMQP\Transformer\ResponseTransformer;
-use Symfony\Component\Serializer\Encoder\EncoderInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Mockery;
 
@@ -45,7 +43,7 @@ class ResponseTransformerTest extends \PHPUnit_Framework_TestCase
                 'content_type' => 'application/json',
                 'headers' => [
                     'my' => 'header',
-                    'x-symfony-response' => \stdClass::class
+                    'x-symfony-command' => \stdClass::class
                 ]
             ],
             $message->getAttributes()

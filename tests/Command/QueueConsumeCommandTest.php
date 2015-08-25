@@ -4,7 +4,7 @@ namespace Tests\Boekkooi\Bundle\AMQP\Command;
 use Boekkooi\Bundle\AMQP\Command\QueueConsumeCommand;
 use Boekkooi\Bundle\AMQP\Consumer\Consumer;
 use Boekkooi\Bundle\AMQP\DependencyInjection\BoekkooiAMQPExtension;
-use Boekkooi\Tactician\AMQP\AMQPCommand;
+use Boekkooi\Tactician\AMQP\Command;
 use League\Tactician\CommandBus;
 use Mockery;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -56,7 +56,7 @@ class QueueConsumeCommandTest extends \PHPUnit_Framework_TestCase
     {
         $this->commandBus
             ->shouldReceive('handle')
-            ->with(Mockery::type(AMQPCommand::class))
+            ->with(Mockery::type(Command::class))
             ->times(5);
 
         $consumer = $this->mockConsumerWithConsume(['my_queue']);
@@ -116,7 +116,7 @@ class QueueConsumeCommandTest extends \PHPUnit_Framework_TestCase
 
         $this->commandBus
             ->shouldReceive('handle')
-            ->with(Mockery::type(AMQPCommand::class))
+            ->with(Mockery::type(Command::class))
             ->andThrow(\RuntimeException::class);
 
         $this->container

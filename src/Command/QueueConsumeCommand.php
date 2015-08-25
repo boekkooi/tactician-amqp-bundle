@@ -2,7 +2,7 @@
 namespace Boekkooi\Bundle\AMQP\Command;
 
 use Boekkooi\Bundle\AMQP\DependencyInjection\BoekkooiAMQPExtension;
-use Boekkooi\Tactician\AMQP\AMQPCommand;
+use Boekkooi\Tactician\AMQP\Command;
 use League\Tactician\CommandBus;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
@@ -41,7 +41,7 @@ class QueueConsumeCommand extends ContainerAwareCommand
         $consumer->consume(
             (array)$input->getArgument('queues'),
             function (\AMQPEnvelope $envelope, \AMQPQueue $queue) use ($commandBus, &$limit) {
-                $commandBus->handle(new AMQPCommand($envelope, $queue));
+                $commandBus->handle(new Command($envelope, $queue));
 
                 $limit--;
                 return $limit > 0;

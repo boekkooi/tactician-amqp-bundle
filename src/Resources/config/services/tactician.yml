@@ -1,6 +1,9 @@
 parameters:
-  boekkooi.amqp.tactician.publisher.class: Boekkooi\Tactician\AMQP\Publisher\MessagePublisher
-  boekkooi.amqp.tactician.exchange_locator.class: Boekkooi\Bundle\AMQP\Publisher\Locator\ContainerLocator
+  boekkooi.amqp.tactician.exchange_locator.class: Boekkooi\Bundle\AMQP\ExchangeLocator\ContainerLocator
+
+  boekkooi.amqp.tactician.publisher_locator.class: Boekkooi\Bundle\AMQP\PublisherLocator\HeaderPublisherLocator
+  boekkooi.amqp.tactician.publisher.basic.class: Boekkooi\Tactician\AMQP\Publisher\ExchangeLocatorPublisher
+  boekkooi.amqp.tactician.publisher.rpc.class: Boekkooi\Tactician\AMQP\Publisher\RemoteProcedureCommandPublisher
 
   boekkooi.amqp.tactician.serializer.class: Boekkooi\Bundle\AMQP\Transformer\Serializer\SimpleSerializer
   boekkooi.amqp.tactician.serializer.format: 'json'
@@ -11,21 +14,29 @@ parameters:
 
   boekkooi.amqp.middleware.publish.class: Boekkooi\Tactician\AMQP\Middleware\PublishMiddleware
   boekkooi.amqp.middleware.consume.class: Boekkooi\Tactician\AMQP\Middleware\ConsumeMiddleware
-  boekkooi.amqp.middleware.rpc.class: Boekkooi\Tactician\AMQP\Middleware\RPCMiddleware
+  boekkooi.amqp.middleware.remote_response.class: Boekkooi\Tactician\AMQP\Middleware\RemoteResponseMiddleware
   boekkooi.amqp.middleware.command_transformer.class: Boekkooi\Tactician\AMQP\Middleware\CommandTransformerMiddleware
   boekkooi.amqp.middleware.envelope_transformer.class: Boekkooi\Tactician\AMQP\Middleware\EnvelopeTransformerMiddleware
 
 services:
   ## Publishing related ##
-  boekkooi.amqp.tactician.publisher:
-    class: %boekkooi.amqp.tactician.publisher.class%
-    arguments:
-      - @boekkooi.amqp.tactician.exchange_locator
-
   boekkooi.amqp.tactician.exchange_locator:
     class: %boekkooi.amqp.tactician.exchange_locator.class%
     arguments:
       - @service_container
+
+  boekkooi.amqp.tactician.publisher_locator:
+    class: %boekkooi.amqp.tactician.publisher_locator.class%
+
+  boekkooi.amqp.tactician.publisher.basic:
+    class: %boekkooi.amqp.tactician.publisher.basic.class%
+    arguments:
+      - @boekkooi.amqp.tactician.exchange_locator
+
+  boekkooi.amqp.tactician.publisher.rpc:
+    class: %boekkooi.amqp.tactician.publisher.rpc.class%
+    arguments:
+      - @boekkooi.amqp.tactician.exchange_locator
 
   ## Transformer related ##
   boekkooi.amqp.tactician.serializer:
@@ -53,13 +64,13 @@ services:
   boekkooi.amqp.middleware.publish:
     class: %boekkooi.amqp.middleware.publish.class%
     arguments:
-      - @boekkooi.amqp.tactician.publisher
+      - @boekkooi.amqp.tactician.publisher_locator
 
   boekkooi.amqp.middleware.consume:
     class: %boekkooi.amqp.middleware.consume.class%
 
-  boekkooi.amqp.middleware.rpc:
-    class: %boekkooi.amqp.middleware.rpc.class%
+  boekkooi.amqp.middleware.remote_response:
+    class: %boekkooi.amqp.middleware.remote_response.class%
     arguments:
       - @boekkooi.amqp.tactician.response_transformer
 

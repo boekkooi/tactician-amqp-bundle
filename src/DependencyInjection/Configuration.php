@@ -172,6 +172,10 @@ class Configuration implements ConfigurationInterface
                             ->scalarNode('exchange')->isRequired()->cannotBeEmpty()->end()
                             ->scalarNode('routing_key')->defaultValue(null)->end()
 
+                            ->booleanNode('rpc')
+                                ->info('the command is expected to return a response')
+                                ->defaultFalse()
+                            ->end()
                             ->booleanNode('mandatory')
                                 ->info('the command must be routed to a valid queue')
                                 ->defaultTrue()

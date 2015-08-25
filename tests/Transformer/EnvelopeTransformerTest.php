@@ -1,13 +1,8 @@
 <?php
 namespace Tests\Boekkooi\Bundle\AMQP\Transformer;
 
-use Boekkooi\Bundle\AMQP\CommandMessage;
-use Boekkooi\Bundle\AMQP\Exception\CommandTransformationException;
 use Boekkooi\Bundle\AMQP\Exception\EnvelopeTransformationException;
-use Boekkooi\Bundle\AMQP\Exception\InvalidArgumentException;
 use Boekkooi\Bundle\AMQP\Transformer\EnvelopeTransformer;
-use Boekkooi\Bundle\AMQP\Transformer\SerializerTransformer;
-use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Mockery;
 

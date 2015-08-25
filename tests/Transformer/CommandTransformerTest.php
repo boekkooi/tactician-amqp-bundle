@@ -32,7 +32,7 @@ class CommandTransformerTest extends \PHPUnit_Framework_TestCase
             ->shouldReceive('serialize')
             ->atLeast()->once()
             ->with($command, 'json')
-            ->andReturn('transfomed');
+            ->andReturn('transformed');
 
         $transformer = new CommandTransformer($serializer, 'json');
         $transformer->registerCommand($commandConfiguration);
@@ -40,7 +40,7 @@ class CommandTransformerTest extends \PHPUnit_Framework_TestCase
         $message = $transformer->transformCommandToMessage($command);
 
         $this->assertInstanceOf(CommandMessage::class, $message);
-        $this->assertSame('transfomed', $message->getMessage());
+        $this->assertSame('transformed', $message->getMessage());
         $this->assertSame('key', $message->getRoutingKey());
         $this->assertSame(AMQP_MANDATORY, $message->getFlags());
         $this->assertSame('/', $message->getVHost());

@@ -359,6 +359,7 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
                             'vhost' => '/test',
                             'exchange' => 'a',
                             'routing_key' => 'key',
+                            'rpc' => true,
                             'mandatory' => false,
                             'immediate' => true,
                             'attributes' => [
@@ -374,6 +375,7 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
                         'vhost' => '/',
                         'exchange' => 'e',
                         'routing_key' => null,
+                        'rpc' => false,
                         'mandatory' => true,
                         'immediate' => false,
                         'attributes' => []
@@ -382,6 +384,7 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
                         'vhost' => '/test',
                         'exchange' => 'a',
                         'routing_key' => 'key',
+                        'rpc' => true,
                         'mandatory' => false,
                         'immediate' => true,
                         'attributes' => [
