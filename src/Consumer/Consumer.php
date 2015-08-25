@@ -54,16 +54,14 @@ class Consumer
                 $cancel = false;
                 throw $e;
             } finally {
-                if ($cancel) {
-                    $this->queuesCancel($queues);
-                }
+                $this->destroyQueues($queues, $cancel);
             }
         } finally {
             // Close connection when done
             if ($connection->isConnected()) {
                 $connection->disconnect();
             }
-            unset($connection);
+            unset($channel, $connection);
         }
     }
 
@@ -103,12 +101,17 @@ class Consumer
 
     /**
      * @param \AMQPQueue[] $queues
+     * @param bool $cancel
      */
-    private function queuesCancel($queues)
+    private function destroyQueues(&$queues, $cancel)
     {
         # Cancel consumption of the queue
-        foreach ($queues as $queue) {
-            $queue->cancel();
+        while (!empty($queues)) {
+            $queue = array_pop($queues);
+            if ($cancel) {
+                $queue->cancel();
+            }
+            unset($queue);
         }
     }
 }
