@@ -13,16 +13,9 @@ class LazyConnection
     private $connectionArguments;
 
     /**
-     * @var string
+     * @var \AMQPConnection
      */
-    private $key;
-
-    /**
-     * A connection pool
-     *
-     * @var \AMQPConnection[]
-     */
-    private static $connection = [];
+    private $connection;
 
     /**
      * @param string $host The host to connect too. Note: Max 1024 characters.
@@ -54,7 +47,6 @@ class LazyConnection
             'write_timeout' => $writeTimeout,
             'connect_timeout' => $connectTimeout
         ];
-        $this->key = join('||', $this->connectionArguments);
     }
 
     /**
@@ -64,8 +56,8 @@ class LazyConnection
      */
     public function instance()
     {
-        if (isset(self::$connection[$this->key])) {
-            $conn = self::$connection[$this->key];
+        if ($this->connection !== null) {
+            $conn = $this->connection;
 
             if (!$conn->isConnected()) {
                 $conn->reconnect();
@@ -74,7 +66,7 @@ class LazyConnection
             return $conn;
         }
 
-        return self::$connection[$this->key] = $this->create();
+        return $this->connection = $this->create();
     }
 
     /**
