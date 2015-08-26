@@ -6,7 +6,6 @@ use Boekkooi\Tactician\AMQP\Message;
 
 class MissingPublisherException extends BaseException
 {
-
     public static function noHeaderInMessage(Message $message, $header)
     {
         $exception = new self(sprintf(

@@ -46,7 +46,7 @@ class HeaderPublisherLocator implements PublisherLocator
     public function getPublisherForMessage(Message $message)
     {
         $attributes = $message->getAttributes();
-        if(!isset($attributes['headers']) || !isset($attributes['headers'][$this->headerName])) {
+        if (!isset($attributes['headers']) || !isset($attributes['headers'][$this->headerName])) {
             throw MissingPublisherException::noHeaderInMessage($message, $this->headerName);
         }
 
