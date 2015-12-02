@@ -6,6 +6,6 @@ services:
   boekkooi.amqp.abstract.consumer.queue_locator:
     class: %boekkooi.amqp.consumer.queue_locator.class%
     arguments:
-      - @service_container
+      - "@service_container"
     abstract: true
     public: false

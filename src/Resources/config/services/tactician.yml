@@ -23,7 +23,7 @@ services:
   boekkooi.amqp.tactician.exchange_locator:
     class: %boekkooi.amqp.tactician.exchange_locator.class%
     arguments:
-      - @service_container
+      - "@service_container"
 
   boekkooi.amqp.tactician.publisher_locator:
     class: %boekkooi.amqp.tactician.publisher_locator.class%
@@ -31,12 +31,12 @@ services:
   boekkooi.amqp.tactician.publisher.basic:
     class: %boekkooi.amqp.tactician.publisher.basic.class%
     arguments:
-      - @boekkooi.amqp.tactician.exchange_locator
+      - "@boekkooi.amqp.tactician.exchange_locator"
 
   boekkooi.amqp.tactician.publisher.rpc:
     class: %boekkooi.amqp.tactician.publisher.rpc.class%
     arguments:
-      - @boekkooi.amqp.tactician.exchange_locator
+      - "@boekkooi.amqp.tactician.exchange_locator"
 
   ## Transformer related ##
   boekkooi.amqp.tactician.serializer:
@@ -45,26 +45,26 @@ services:
   boekkooi.amqp.tactician.command_transformer:
     class: %boekkooi.amqp.tactician.command_transformer.class%
     arguments:
-      - @boekkooi.amqp.tactician.serializer
+      - "@boekkooi.amqp.tactician.serializer"
       - %boekkooi.amqp.tactician.serializer.format%
 
   boekkooi.amqp.tactician.envelope_transformer:
     class: %boekkooi.amqp.tactician.envelope_transformer.class%
     arguments:
-      - @boekkooi.amqp.tactician.serializer
+      - "@boekkooi.amqp.tactician.serializer"
       - %boekkooi.amqp.tactician.serializer.format%
 
   boekkooi.amqp.tactician.response_transformer:
     class: %boekkooi.amqp.tactician.response_transformer.class%
     arguments:
-      - @boekkooi.amqp.tactician.serializer
+      - "@boekkooi.amqp.tactician.serializer"
       - %boekkooi.amqp.tactician.serializer.format%
 
   ## Tactician middleware ##
   boekkooi.amqp.middleware.publish:
     class: %boekkooi.amqp.middleware.publish.class%
     arguments:
-      - @boekkooi.amqp.tactician.publisher_locator
+      - "@boekkooi.amqp.tactician.publisher_locator"
 
   boekkooi.amqp.middleware.consume:
     class: %boekkooi.amqp.middleware.consume.class%
@@ -72,15 +72,15 @@ services:
   boekkooi.amqp.middleware.remote_response:
     class: %boekkooi.amqp.middleware.remote_response.class%
     arguments:
-      - @boekkooi.amqp.tactician.response_transformer
+      - "@boekkooi.amqp.tactician.response_transformer"
 
   boekkooi.amqp.middleware.command_transformer:
     class: %boekkooi.amqp.middleware.command_transformer.class%
     arguments:
-      - @boekkooi.amqp.tactician.command_transformer
+      - "@boekkooi.amqp.tactician.command_transformer"
       - []
 
   boekkooi.amqp.middleware.envelope_transformer:
     class: %boekkooi.amqp.middleware.envelope_transformer.class%
     arguments:
-      - @boekkooi.amqp.tactician.envelope_transformer
+      - "@boekkooi.amqp.tactician.envelope_transformer"
