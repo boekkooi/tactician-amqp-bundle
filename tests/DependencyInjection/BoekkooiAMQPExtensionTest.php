@@ -7,6 +7,8 @@ use Boekkooi\Bundle\AMQP\Exception\InvalidConfigurationException;
 use League\Tactician\Bundle\DependencyInjection\TacticianExtension;
 use Matthias\SymfonyDependencyInjectionTest\PhpUnit\AbstractExtensionTestCase;
 use Matthias\SymfonyDependencyInjectionTest\PhpUnit\DefinitionHasMethodCallConstraint;
+use Symfony\Component\DependencyInjection\Compiler\PassConfig;
+use Symfony\Component\DependencyInjection\Compiler\ResolveDefinitionTemplatesPass;
 use Symfony\Component\DependencyInjection\Dumper;
 use Symfony\Component\DependencyInjection\Reference;
 
@@ -188,7 +190,6 @@ class BoekkooiAMQPExtensionTest extends AbstractExtensionTestCase
         ]);
 
         //TODO check locator
-
         $this->assertContainerCanBeDumped();
     }
 
@@ -294,6 +295,12 @@ class BoekkooiAMQPExtensionTest extends AbstractExtensionTestCase
         // Load tactician
         $tacticianExt = new TacticianExtension();
         $tacticianExt->load([], $this->container);
+
+        // Compile child definitions
+        $this->container->getCompilerPassConfig()->setOptimizationPasses(array(
+            new ResolveDefinitionTemplatesPass()
+        ));
+        $this->container->compile();
 
         $dumperCalls = $this->provideDumperClasses();
         foreach ($dumperCalls as $dumperCall) {
