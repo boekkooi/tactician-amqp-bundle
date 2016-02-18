@@ -3,7 +3,7 @@ parameters:
 
   boekkooi.amqp.tactician.publisher_locator.class: Boekkooi\Bundle\AMQP\PublisherLocator\HeaderPublisherLocator
   boekkooi.amqp.tactician.publisher.basic.class: Boekkooi\Tactician\AMQP\Publisher\ExchangeLocatorPublisher
-``  boekkooi.amqp.tactician.publisher.rpc.class: Boekkooi\Tactician\AMQP\Publisher\RemoteProcedure\CommandPublisher
+  boekkooi.amqp.tactician.publisher.rpc.class: Boekkooi\Tactician\AMQP\Publisher\RemoteProcedure\CommandPublisher
 
   boekkooi.amqp.tactician.serializer.class: Boekkooi\Bundle\AMQP\Transformer\Serializer\SimpleSerializer
   boekkooi.amqp.tactician.serializer.format: 'json'
