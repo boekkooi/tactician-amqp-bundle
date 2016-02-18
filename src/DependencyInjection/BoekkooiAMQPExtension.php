@@ -296,6 +296,28 @@ class BoekkooiAMQPExtension extends Extension
         $container
             ->getDefinition('boekkooi.amqp.middleware.remote_response')
             ->replaceArgument(0, $responseTransformer);
+
+        foreach ($config['publisher']['transaction'] as $name) {
+            $capturerId = sprintf('boekkooi.amqp.middleware.transaction.%s_capturer', $name);
+            $container->setDefinition(
+                $capturerId,
+                clone $container->getDefinition('boekkooi.amqp.tactician.publisher.capturer')
+            );
+
+            $transaction = clone $container->getDefinition('boekkooi.amqp.middleware.transaction_transaction');
+            $transaction->replaceArgument(0, new Reference($capturerId));
+            $container->setDefinition(
+                sprintf('boekkooi.amqp.middleware.transaction.%s_transaction', $name),
+                $transaction
+            );
+
+            $publish = clone $container->getDefinition('boekkooi.amqp.middleware.transaction_publish');
+            $publish->replaceArgument(0, new Reference($capturerId));
+            $container->setDefinition(
+                sprintf('boekkooi.amqp.middleware.transaction.%s_publish', $name),
+                $publish
+            );
+        }
     }
 
     private function configureConsoleCommands(ContainerBuilder $container, array $config)

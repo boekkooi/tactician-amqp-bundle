@@ -36,6 +36,7 @@ class BoekkooiAMQPExtensionTest extends AbstractExtensionTestCase
         $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.tactician.publisher.basic', 0, new Reference('boekkooi.amqp.tactician.exchange_locator'));
         $this->assertContainerBuilderHasService('boekkooi.amqp.tactician.publisher.rpc');
         $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.tactician.publisher.rpc', 0, new Reference('boekkooi.amqp.tactician.exchange_locator'));
+        $this->assertContainerBuilderHasService('boekkooi.amqp.tactician.publisher.capturer');
 
         $this->assertContainerBuilderHasService('boekkooi.amqp.tactician.serializer');
         $this->assertContainerBuilderHasService('boekkooi.amqp.tactician.envelope_transformer');
@@ -57,6 +58,8 @@ class BoekkooiAMQPExtensionTest extends AbstractExtensionTestCase
         $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.middleware.command_transformer', 0, new Reference('boekkooi.amqp.tactician.command_transformer'));
         $this->assertContainerBuilderHasService('boekkooi.amqp.middleware.envelope_transformer');
         $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.middleware.envelope_transformer', 0, new Reference('boekkooi.amqp.tactician.envelope_transformer'));
+        $this->assertContainerBuilderHasService('boekkooi.amqp.middleware.transaction_transaction');
+        $this->assertContainerBuilderHasService('boekkooi.amqp.middleware.transaction_publish');
 
         $this->assertContainerBuilderHasService('boekkooi.amqp.consume_command_bus');
     }
@@ -191,6 +194,30 @@ class BoekkooiAMQPExtensionTest extends AbstractExtensionTestCase
 
         //TODO check locator
         $this->assertContainerCanBeDumped();
+    }
+
+    public function testCustomTransactionMiddleware()
+    {
+        $this->load([
+            'publisher' => [
+                'transaction' => [
+                    'one',
+                    'two'
+                ]
+            ]
+        ]);
+
+        $capturerRef = new Reference('boekkooi.amqp.middleware.transaction.one_capturer');
+        $this->assertContainerBuilderHasService('boekkooi.amqp.middleware.transaction.one_transaction');
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.middleware.transaction.one_transaction', 0, $capturerRef);
+        $this->assertContainerBuilderHasService('boekkooi.amqp.middleware.transaction.one_publish');
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.middleware.transaction.one_publish', 0, $capturerRef);
+
+        $capturerRef = new Reference('boekkooi.amqp.middleware.transaction.two_capturer');
+        $this->assertContainerBuilderHasService('boekkooi.amqp.middleware.transaction.two_transaction');
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.middleware.transaction.two_transaction', 0, $capturerRef);
+        $this->assertContainerBuilderHasService('boekkooi.amqp.middleware.transaction.two_publish');
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.middleware.transaction.two_publish', 0, $capturerRef);
     }
 
     public function testMissingVHostConnection()

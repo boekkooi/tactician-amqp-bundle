@@ -90,3 +90,35 @@ tactician:
 boekkooi_amqp:
   command_bus: tactician.commandbus.amqp_consume
 ```
+
+## Publish transactions
+
+Due to the way AMQP handles transactions there is currently only one way (in memory) to handle transactions for publishing commands.
+To use a commandbus with the transaction middleware we need to use a different middleware to publish and one to manage these transactions.
+
+To use transactions we exchange the `boekkooi.amqp.middleware.publish` with the `boekkooi.amqp.middleware.transaction_publish` middleware and add the `boekkooi.amqp.middleware.transaction_transaction` to our middleware.
+This will make the config look as followed.
+
+```YAML
+tactician:
+  commandbus:
+    amqp_publish:
+      middleware:
+        - boekkooi.amqp.middleware.transaction_transaction
+        - boekkooi.amqp.middleware.command_transformer
+        - boekkooi.amqp.middleware.transaction_publish
+        - tactician.middleware.command_handler
+```
+
+To use multiple commandbuses with multiple transactions you can configure the as followed.
+
+```YAML
+boekkooi_amqp:
+  # AMQP connection & vhost & command config
+  # ...
+  publisher:
+    transaction:
+      - <my_name>
+```
+
+Now you can use the `boekkooi.amqp.middleware.transaction.<my_name>_transaction` and `boekkooi.amqp.middleware.transaction.<my_name>_publish` middleware.

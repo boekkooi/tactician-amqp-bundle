@@ -21,6 +21,7 @@ class Configuration implements ConfigurationInterface
         $this->addConnections($rootNode);
         $this->addVHosts($rootNode);
         $this->addCommands($rootNode);
+        $this->addPublisher($rootNode);
 
         $this->addTactician($rootNode);
 
@@ -208,6 +209,23 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('response_transformer')->defaultValue('boekkooi.amqp.tactician.response_transformer')->end()
                 ->scalarNode('serializer')->defaultValue('boekkooi.amqp.tactician.serializer')->end()
                 ->scalarNode('serializer_format')->defaultValue('json')->end()
+            ->end();
+    }
+
+    private function addPublisher(ArrayNodeDefinition $node)
+    {
+        $node
+            ->children()
+                ->arrayNode('publisher')
+                    ->addDefaultsIfNotSet()
+                    ->canBeUnset()
+                    ->children()
+                        ->arrayNode('transaction')
+                            ->defaultValue(array())
+                            ->prototype('scalar')
+                        ->end()
+                    ->end()
+                ->end()
             ->end();
     }
 }

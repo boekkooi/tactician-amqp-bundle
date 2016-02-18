@@ -426,6 +426,46 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testPublisherTransactions()
+    {
+        $this->assertProcessedConfigurationEquals(
+            [
+                'boekkooi_amqp' => [
+                    'publisher' => [
+                        'transaction' => [
+                            'test',
+                            'Yep'
+                        ]
+                    ]
+                ]
+            ],
+            array_merge($this->defaultConfig(), [
+                'publisher' => [
+                    'transaction' => [
+                        'test',
+                        'Yep'
+                    ]
+                ]
+            ])
+        );
+    }
+
+    public function testPublisherTransactionsScalar()
+    {
+        $this->assertConfigurationIsInvalid(
+            [
+                'boekkooi_amqp' => [
+                    'publisher' => [
+                        'transaction' => [
+                            [],
+                        ]
+                    ]
+                ]
+            ],
+            'Invalid type for path "boekkooi_amqp.publisher.transaction.0". Expected scalar, but got array.'
+        );
+    }
+
     protected function defaultConfig()
     {
         return [
@@ -437,7 +477,8 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
             'command_transformer' => 'boekkooi.amqp.tactician.command_transformer',
             'response_transformer' => 'boekkooi.amqp.tactician.response_transformer',
             'serializer' => 'boekkooi.amqp.tactician.serializer',
-            'serializer_format' => 'json'
+            'serializer_format' => 'json',
+            'publisher' => [ 'transaction' => [] ]
         ];
     }
 

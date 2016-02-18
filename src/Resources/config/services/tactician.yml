@@ -3,7 +3,7 @@ parameters:
 
   boekkooi.amqp.tactician.publisher_locator.class: Boekkooi\Bundle\AMQP\PublisherLocator\HeaderPublisherLocator
   boekkooi.amqp.tactician.publisher.basic.class: Boekkooi\Tactician\AMQP\Publisher\ExchangeLocatorPublisher
-  boekkooi.amqp.tactician.publisher.rpc.class: Boekkooi\Tactician\AMQP\Publisher\RemoteProcedureCommandPublisher
+``  boekkooi.amqp.tactician.publisher.rpc.class: Boekkooi\Tactician\AMQP\Publisher\RemoteProcedure\CommandPublisher
 
   boekkooi.amqp.tactician.serializer.class: Boekkooi\Bundle\AMQP\Transformer\Serializer\SimpleSerializer
   boekkooi.amqp.tactician.serializer.format: 'json'
@@ -17,6 +17,11 @@ parameters:
   boekkooi.amqp.middleware.remote_response.class: Boekkooi\Tactician\AMQP\Middleware\RemoteResponseMiddleware
   boekkooi.amqp.middleware.command_transformer.class: Boekkooi\Tactician\AMQP\Middleware\CommandTransformerMiddleware
   boekkooi.amqp.middleware.envelope_transformer.class: Boekkooi\Tactician\AMQP\Middleware\EnvelopeTransformerMiddleware
+
+  boekkooi.amqp.middleware.transaction_transaction.class: Boekkooi\Tactician\AMQP\Middleware\Transaction\InMemoryMiddleware
+  boekkooi.amqp.middleware.transaction_publish.class: Boekkooi\Tactician\AMQP\Middleware\MessageCapturingMiddleware
+
+  boekkooi.amqp.tactician.publisher.capturer.class: Boekkooi\Tactician\AMQP\Publisher\MessageCapturer
 
 services:
   ## Publishing related ##
@@ -37,6 +42,9 @@ services:
     class: %boekkooi.amqp.tactician.publisher.rpc.class%
     arguments:
       - "@boekkooi.amqp.tactician.exchange_locator"
+
+  boekkooi.amqp.tactician.publisher.capturer:
+    class: %boekkooi.amqp.tactician.publisher.capturer.class%
 
   ## Transformer related ##
   boekkooi.amqp.tactician.serializer:
@@ -84,3 +92,14 @@ services:
     class: %boekkooi.amqp.middleware.envelope_transformer.class%
     arguments:
       - "@boekkooi.amqp.tactician.envelope_transformer"
+
+  boekkooi.amqp.middleware.transaction_transaction:
+    class: %boekkooi.amqp.middleware.transaction_transaction.class%
+    arguments:
+      - "@boekkooi.amqp.tactician.publisher.capturer"
+      - "@boekkooi.amqp.tactician.publisher_locator"
+
+  boekkooi.amqp.middleware.transaction_publish:
+    class: %boekkooi.amqp.middleware.transaction_publish.class%
+    arguments:
+      - "@boekkooi.amqp.tactician.publisher.capturer"

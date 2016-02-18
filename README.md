@@ -31,4 +31,4 @@ Special thanks go to:
 ## TODO
 - Support for none durable exchange and queues
 - Add more documentation and examples
-- Thank @rosstuck for is great work on tactician and buy him a drink or 2
+- Add support for amqp native transactions
