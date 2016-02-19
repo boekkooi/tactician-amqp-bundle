@@ -74,6 +74,9 @@ services:
     arguments:
       - "@boekkooi.amqp.tactician.publisher_locator"
 
+  boekkooi.amqp.middleware.terminator:
+    class: Boekkooi\Tactician\AMQP\Middleware\UnpublishedTerminalMiddleware
+
   boekkooi.amqp.middleware.consume:
     class: %boekkooi.amqp.middleware.consume.class%
 

@@ -60,6 +60,7 @@ class BoekkooiAMQPExtensionTest extends AbstractExtensionTestCase
         $this->assertContainerBuilderHasServiceDefinitionWithArgument('boekkooi.amqp.middleware.envelope_transformer', 0, new Reference('boekkooi.amqp.tactician.envelope_transformer'));
         $this->assertContainerBuilderHasService('boekkooi.amqp.middleware.transaction_transaction');
         $this->assertContainerBuilderHasService('boekkooi.amqp.middleware.transaction_publish');
+        $this->assertContainerBuilderHasService('boekkooi.amqp.middleware.terminator');
 
         $this->assertContainerBuilderHasService('boekkooi.amqp.consume_command_bus');
     }
